@@ -26,6 +26,8 @@ const Pattern = ({ instrumentName }) => {
                 key={index}
                 isActive={isActive}
                 onClick={() => handleBeatToggle(index)}
+                instrumentName={instrumentName}
+                beatIndex={index}
               />
             ))}
           </Box>
@@ -35,6 +37,8 @@ const Pattern = ({ instrumentName }) => {
                 key={index + 8}
                 isActive={isActive}
                 onClick={() => handleBeatToggle(index + 8)}
+                instrumentName={instrumentName}
+                beatIndex={index + 8}
               />
             ))}
           </Box>
@@ -48,6 +52,8 @@ const Pattern = ({ instrumentName }) => {
               key={index}
               isActive={isActive}
               onClick={() => handleBeatToggle(index)}
+              instrumentName={instrumentName}
+              beatIndex={index}
             />
           ))}
         </Box>
