@@ -24,8 +24,6 @@ const Pattern = ({ instrumentName }) => {
             {beatStates.slice(0, 8).map((isActive, index) => (
               <BeatButton
                 key={index}
-                isActive={isActive}
-                onClick={() => handleBeatToggle(index)}
                 instrumentName={instrumentName}
                 beatIndex={index}
               />
@@ -35,8 +33,6 @@ const Pattern = ({ instrumentName }) => {
             {beatStates.slice(8).map((isActive, index) => (
               <BeatButton
                 key={index + 8}
-                isActive={isActive}
-                onClick={() => handleBeatToggle(index + 8)}
                 instrumentName={instrumentName}
                 beatIndex={index + 8}
               />
@@ -50,8 +46,6 @@ const Pattern = ({ instrumentName }) => {
           {beatStates.map((isActive, index) => (
             <BeatButton
               key={index}
-              isActive={isActive}
-              onClick={() => handleBeatToggle(index)}
               instrumentName={instrumentName}
               beatIndex={index}
             />
