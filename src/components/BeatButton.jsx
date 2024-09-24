@@ -1,8 +1,11 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-import { useDocument } from 'use-fireproof';
+//import { useDocument } from 'use-fireproof';
+import { useFireproof } from 'use-fireproof';
 
 const BeatButton = ({ instrumentName, beatIndex }) => {
+  //const { database, useDocument } = useFireproof("loopernet-database");
+  const { database, useDocument } = useFireproof();
   const buttonId = `beat-${instrumentName.toLowerCase().replace(/\s+/g, '-')}-${beatIndex}`;
 
   const [beat, setBeat, saveBeat] = useDocument(() => ({

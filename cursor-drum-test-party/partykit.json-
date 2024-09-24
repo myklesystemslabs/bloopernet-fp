@@ -1,0 +1,10 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "cursor-drum-test-party",
+  "main": "src/server.ts",
+  "compatibilityDate": "2024-09-24",
+  "serve": {
+    "path": "public",
+    "build": "src/client.ts"
+  }
+}

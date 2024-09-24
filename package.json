@@ -12,7 +12,9 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fireproof/partykit": "^0.18.0",
     "@mui/material": "^6.1.0",
+    "partysocket": "1.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "use-fireproof": "^0.18.0"
@@ -27,6 +29,7 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
+    "partykit": "0.0.110",
     "vite": "^5.4.1"
   }
 }

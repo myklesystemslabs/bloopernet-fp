@@ -1,0 +1,7 @@
+{
+  "name": "loopernet",
+  "main": "src/partykit/server.ts",
+  "parties": {
+    "fireproof": "node_modules/@fireproof/partykit/src/server.ts"
+  }
+}
