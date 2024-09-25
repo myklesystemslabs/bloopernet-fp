@@ -8,10 +8,8 @@ import './App.css';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  //const { database } = useFireproof('loopernet-database');
   const { database } = useFireproof();
   window.myfireproofDB = database;
-//  const isConnectedRef = React.useRef(false);
 
   // Connect to PartyKit
   React.useEffect(() => {
@@ -32,8 +30,14 @@ function App() {
 
       console.log('PartyKit Host:', partyKitHost);  // Debug log
       try {
-        const connection = connect.partykit(database, partyKitHost);
-        console.log('Connected to PartyKit:', connection);
+        const connection = connect.partykit(database, partyKitHost, {
+          onConnect: () => console.log("Connected to PartyKit server"),
+          onDisconnect: () => console.log("Disconnected from PartyKit server"),
+          onMessage: (message) => console.log("Received message from PartyKit:", message),
+          onSend: (message) => console.log("Sending message to PartyKit:", message),
+        });
+
+        console.log('PartyKit connection established:', connection);
         window.fireproofIsConnected = true;
       } catch (error) {
         console.error('Failed to connect to PartyKit:', error);
