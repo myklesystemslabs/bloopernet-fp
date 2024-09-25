@@ -1,11 +1,20 @@
 import React from 'react';
-import './BeatButton.css'; // We'll create this CSS file
+import { useLiveQuery, useFireproof } from 'use-fireproof';
+import './BeatButton.css';
 
-const BeatButton = ({ instrumentName, beatIndex, isActive, updateBeat }) => {
+const BeatButton = ({ instrumentName, beatIndex, updateBeat }) => {
   const buttonId = `beat-${instrumentName.toLowerCase().replace(/\s+/g, '-')}-${beatIndex}`;
+  // const { useLiveQuery } = useFireproof();
+
+  // Use useLiveQuery to listen for changes to this specific beat document
+  //const result = useLiveQuery('_id', buttonId);
+  const result = useLiveQuery('_id', {key:buttonId});
+  const beatDoc = result.docs[0];
+
+  const isActive = beatDoc ? beatDoc.isActive : false;
 
   const handleClick = () => {
-    updateBeat(buttonId, !isActive);
+    updateBeat(buttonId, instrumentName, beatIndex, !isActive);
   };
 
   return (
