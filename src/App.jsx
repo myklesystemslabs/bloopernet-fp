@@ -2,6 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import PatternSet from './components/PatternSet';
+import TopControls from './components/TopControls';
 import { useFireproof } from 'use-fireproof';
 import { connect } from '@fireproof/partykit';
 import './App.css';
@@ -20,7 +21,6 @@ function App() {
         return; // Prevent multiple connections
       }
 
-      // This isn't working, don't know why yet.  Please don't change this until I say so.
       //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
       const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev"
       if (!partyKitHost) {
@@ -50,8 +50,9 @@ function App() {
   return (
     <Box sx={{ textAlign: 'center', padding: '20px' }}>
       <Typography variant="h3" gutterBottom>
-        Loopernet 🦆⚡
+        Loopernet Demo 🦆⚡
       </Typography>
+      <TopControls />
       <PatternSet instruments={instruments} />
     </Box>
   );

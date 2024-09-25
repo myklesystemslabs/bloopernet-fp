@@ -7,6 +7,7 @@ const BeatButton = ({ instrumentName, beatIndex }) => {
 
   const [beat, setBeat, saveBeat] = useDocument(() => ({
     _id: buttonId,
+    type: 'beat',
     isActive: false,
     instrumentName,
     beatIndex,
@@ -43,11 +44,11 @@ const BeatButton = ({ instrumentName, beatIndex }) => {
     >
       <Box
         sx={{
-          width: beat.isActive ? 20 : 16,
-          height: beat.isActive ? 20 : 16,
+          width: beat.isActive ? 20 : 10,
+          height: beat.isActive ? 20 : 10,
           borderRadius: '50%',
           backgroundColor: beat.isActive ? '#ff4136' : '#8B4513',
-          transition: 'all 0.2s ease',
+          transition: 'all 0.1s ease',
         }}
       />
     </Box>
