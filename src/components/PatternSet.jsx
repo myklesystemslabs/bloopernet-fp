@@ -1,19 +1,19 @@
 import React from 'react';
-import Box from '@mui/material/Box';
 import Pattern from './Pattern';
+import './PatternSet.css';
 
 const PatternSet = ({ instruments, beats, updateBeat }) => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {instruments.map((instrument, index) => (
+    <div className="pattern-set">
+      {instruments.map((instrument) => (
         <Pattern 
-        key={instrument} 
-        instrument={instrument} 
-        beats={beats} 
-        updateBeat={updateBeat}
-      />
+          key={instrument} 
+          instrument={instrument} 
+          beats={beats} 
+          updateBeat={updateBeat}
+        />
       ))}
-    </Box>
+    </div>
   );
 };
 

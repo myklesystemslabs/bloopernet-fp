@@ -1,10 +1,7 @@
 import React from 'react';
-import { useFireproof } from 'use-fireproof';
-import Button from '@mui/material/Button';
+import './TopControls.css';
 
-const TopControls = () => {
-  const { database } = useFireproof();
-
+const TopControls = ({ database, setBeats }) => {
   const handleClear = async () => {
     try {
       // Query for documents where type equals "beat"
@@ -42,9 +39,9 @@ const TopControls = () => {
   };
 
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <Button variant="contained" onClick={handleClear} style={{ marginRight: '10px' }}>Clear</Button>
-      <Button variant="contained" color="error" onClick={handleNuke}>Nuke</Button>
+    <div className="top-controls">
+      <button className="control-button" onClick={handleClear}>Clear</button>
+      <button className="control-button nuke" onClick={handleNuke}>Nuke</button>
     </div>
   );
 };

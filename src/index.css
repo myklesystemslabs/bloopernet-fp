@@ -23,11 +23,11 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1 {
@@ -65,4 +65,29 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.app {
+  width: 100%;
+  max-width: 800px;  /* Adjust this value as needed */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.app-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
 }

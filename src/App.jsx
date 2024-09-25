@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
 import { useFireproof, useLiveQuery } from 'use-fireproof';
@@ -79,13 +77,11 @@ function App() {
   };
 
   return (
-    <Box sx={{ textAlign: 'center', padding: '20px' }}>
-      <Typography variant="h3" gutterBottom>
-        Loopernet Demo
-      </Typography>
+    <div className="app">
+      <h1 className="app-title">Loopernet Demo</h1>
       <TopControls database={database} />
       <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
-    </Box>
+    </div>
   );
 }
 
