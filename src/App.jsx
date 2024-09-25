@@ -9,6 +9,7 @@ import './App.css';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
+  // we are leaving the database name blank, so we are using the default "fireproof" database
   const { database } = useFireproof();
   window.myfireproofDB = database;
 
@@ -50,7 +51,7 @@ function App() {
   return (
     <Box sx={{ textAlign: 'center', padding: '20px' }}>
       <Typography variant="h3" gutterBottom>
-        Loopernet Demo 🦆⚡
+        Loopernet Demo
       </Typography>
       <TopControls />
       <PatternSet instruments={instruments} />

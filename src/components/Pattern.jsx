@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import BeatButton from './BeatButton';
+import { loadSound, playSoundBuffer } from '../audioUtils';
 
 const Pattern = ({ instrumentName }) => {
   const [beatStates, setBeatStates] = useState(Array(16).fill(false));
+  const [soundBuffer, setSoundBuffer] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -15,6 +17,27 @@ const Pattern = ({ instrumentName }) => {
     newBeatStates[index] = !newBeatStates[index];
     setBeatStates(newBeatStates);
   };
+
+  useEffect(() => {
+    const loadInstrumentSound = async () => {
+      try {
+        const buffer = await loadSound(`/sounds/${instrumentName.toLowerCase()}.wav`);
+        setSoundBuffer(buffer);
+      } catch (error) {
+        console.error(`Failed to load sound for ${instrumentName}:`, error);
+      }
+    };
+    loadInstrumentSound();
+  }, [instrumentName]);
+
+  const playSound = () => {
+    if (soundBuffer) {
+      playSoundBuffer(soundBuffer);
+    } else {
+      console.log(`Sound for ${instrumentName} not loaded yet`);
+    }
+  };
+
 
   const renderBeatButtons = () => {
     if (isMobile) {
@@ -63,7 +86,10 @@ const Pattern = ({ instrumentName }) => {
       marginBottom: 2,
       gap: 2 
     }}>
-      <Typography 
+      <div style={{ width: '100px', marginRight: '10px' }}>
+        <button onClick={playSound}>{instrumentName}</button>
+      </div>
+      {/* <Typography 
         variant="body1" 
         sx={{ 
           width: isMobile ? 'auto' : 80,
@@ -73,7 +99,7 @@ const Pattern = ({ instrumentName }) => {
         }}
       >
         {instrumentName}
-      </Typography>
+      </Typography> */}
       {renderBeatButtons()}
     </Box>
   );
