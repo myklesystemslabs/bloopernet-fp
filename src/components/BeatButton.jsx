@@ -1,57 +1,21 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import { useDocument } from 'use-fireproof';
+import './BeatButton.css'; // We'll create this CSS file
 
-const BeatButton = ({ instrumentName, beatIndex }) => {
+const BeatButton = ({ instrumentName, beatIndex, isActive, updateBeat }) => {
   const buttonId = `beat-${instrumentName.toLowerCase().replace(/\s+/g, '-')}-${beatIndex}`;
 
-  const [beat, setBeat, saveBeat] = useDocument(() => ({
-    _id: buttonId,
-    type: 'beat',
-    isActive: false,
-    instrumentName,
-    beatIndex,
-  }));
-
   const handleClick = () => {
-    // await saveBeat({ ...beat, isActive: !beat.isActive });
-    console.log(`Clicked: ${buttonId}, current isActive: ${beat.isActive}`);
-    const newBeat = { ...beat, isActive: !beat.isActive };
-    console.log(`Updating state: ${JSON.stringify(newBeat)}`);
-    setBeat(newBeat);
-    saveBeat(newBeat).then(() => console.log(`Save completed for ${buttonId}`));
+    updateBeat(buttonId, !isActive);
   };
 
   return (
-    <Box
+    <div
       onClick={handleClick}
-      sx={{
-        width: 30,
-        height: 30,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        margin: '0 2px',
-        cursor: 'pointer',
-        '&:hover': {
-          backgroundColor: 'rgba(0, 0, 0, 0.04)',
-        },
-      }}
+      className={`beat-button ${isActive ? 'active' : 'inactive'}`}
       data-id={buttonId}
-      className={`w-8 h-8 rounded-full ${
-        beat.isActive ? 'bg-blue-500' : 'bg-gray-300'
-      } hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200`}
     >
-      <Box
-        sx={{
-          width: beat.isActive ? 20 : 10,
-          height: beat.isActive ? 20 : 10,
-          borderRadius: '50%',
-          backgroundColor: beat.isActive ? '#ff4136' : '#8B4513',
-          transition: 'all 0.1s ease',
-        }}
-      />
-    </Box>
+      <div className="beat-button-inner" />
+    </div>
   );
 };
 

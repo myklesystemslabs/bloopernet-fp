@@ -1,0 +1,17 @@
+.pattern {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.instrument-button {
+  width: 100px;
+  margin-right: 10px;
+  padding: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.beat-buttons {
+  display: flex;
+}

@@ -1,0 +1,26 @@
+.beat-button {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 2px;
+  cursor: pointer;
+}
+
+.beat-button-inner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.beat-button.inactive .beat-button-inner {
+  background-color: #8B4513; /* Brown color */
+}
+
+.beat-button.active .beat-button-inner {
+  width: 26px;
+  height: 26px;
+  background-color: #FF0000; /* Red color */
+}

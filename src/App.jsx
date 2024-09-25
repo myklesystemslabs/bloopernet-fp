@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import PatternSet from './components/PatternSet';
@@ -9,12 +9,29 @@ import './App.css';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  // we are leaving the database name blank, so we are using the default "fireproof" database
   const { database } = useFireproof();
-  window.myfireproofDB = database;
+  const [beats, setBeats] = useState({});
+  const connectionPromiseRef = React.useRef(null);
+
+  useEffect(() => {
+    const fetchBeats = async () => {
+      try {
+        const result = await database.query('type', { key: 'beat', include_docs: true });
+        const beatsObj = {};
+        result.rows.forEach(row => {
+          beatsObj[row.doc._id] = row.doc.isActive;
+        });
+        setBeats(beatsObj);
+      } catch (error) {
+        console.error('Error fetching beats:', error);
+      }
+    };
+
+    fetchBeats();
+  }, [database]);
 
   // Connect to PartyKit
-  React.useEffect(() => {
+  useEffect(() => {
     const connectToPartyKit = async () => {
       // if (isConnectedRef.current) {
       if (window.fireproofIsConnected) {
@@ -48,13 +65,41 @@ function App() {
     connectToPartyKit();
   }, [database]);
 
+  const updateBeat = async (id, isActive) => {
+    try {
+      let doc;
+      try {
+        doc = await database.get(id);
+      } catch (error) {
+        if (error.message.includes('Not found')) {
+          // Create a new document if it doesn't exist
+          doc = {
+            _id: id,
+            type: 'beat',
+            isActive: false,
+            instrumentName: id.split('-')[1],
+            beatIndex: parseInt(id.split('-')[2])
+          };
+        } else {
+          throw error;
+        }
+      }
+      
+      const updatedDoc = { ...doc, isActive };
+      await database.put(updatedDoc);
+      setBeats(prevBeats => ({ ...prevBeats, [id]: isActive }));
+    } catch (error) {
+      console.error('Error updating beat:', error);
+    }
+  };
+
   return (
     <Box sx={{ textAlign: 'center', padding: '20px' }}>
       <Typography variant="h3" gutterBottom>
         Loopernet Demo
       </Typography>
-      <TopControls />
-      <PatternSet instruments={instruments} />
+      <TopControls database={database} setBeats={setBeats} />
+      <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
     </Box>
   );
 }
