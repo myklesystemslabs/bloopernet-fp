@@ -9,7 +9,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) =
   const ts = useTimesync(); // Access the timesync object
   const [currentQuarterBeat, setCurrentQuarterBeat] = useState(0);
   const [beatTrigger, setBeatTrigger] = useState(0);
-  const patternLength = 16; // 16 quarter-beats
+  const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
 
   useEffect(() => {
@@ -25,12 +25,21 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) =
     loadInstrumentSound();
   }, [instrument]);
 
-  useEffect(() => {
+  const scheduleNextPattern = useCallback(() => {
+    if (!soundBuffer || !playing) return;
+
     clearScheduledEvents(scheduledEventsRef.current);
     scheduledEventsRef.current = scheduleBeats(instrument, soundBuffer, beats, bpm, playing);
-
-    return () => clearScheduledEvents(scheduledEventsRef.current);
   }, [instrument, soundBuffer, beats, bpm, playing]);
+
+  useEffect(() => {
+    if (playing) {
+      scheduleNextPattern();
+      // Schedule every 4 beats (16 quarter beats)
+      const intervalId = setInterval(scheduleNextPattern, (60 / bpm) * 1000 * 4);
+      return () => clearInterval(intervalId);
+    }
+  }, [playing, scheduleNextPattern, bpm]);
 
   const calculateCurrentQuarterBeat = useCallback(() => {
     if (!ts || !bpm || !lastChanged || !playing) return 0;
