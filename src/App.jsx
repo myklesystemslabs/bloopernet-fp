@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import PatternSet from './components/PatternSet';
-import TopControls from './components/TopControls';
 import { useFireproof, useLiveQuery } from 'use-fireproof';
 import { connect } from '@fireproof/partykit';
+import PatternSet from './components/PatternSet';
+import TopControls from './components/TopControls';
 import './App.css';
 
 function App() {
@@ -14,6 +14,8 @@ function App() {
     beats[row.doc._id] = row.doc.isActive;
   });
   const { database } = useFireproof();
+  //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
+  const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev"
 
   // Connect to PartyKit
   useEffect(() => {
@@ -23,8 +25,6 @@ function App() {
         return; // Prevent multiple connections
       }
 
-      //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
-      const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev"
       if (!partyKitHost) {
         console.error('PartyKit host not set. Please check your .env file.');
         return;
@@ -48,6 +48,18 @@ function App() {
 
     connectToPartyKit();
   }, [database]);
+
+  useEffect(() => {
+    const connectToTimesync = async () => {
+      const timesyncURL = partyKitHost + "/parties/partytime/w00t";
+      const ts = timesync.create({
+        server: timesyncURL,
+        timeout: 1000,
+      });
+    }
+
+    connectToTimesync();
+  }, []);
 
   const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
     try {
