@@ -3,19 +3,20 @@ import { useFireproof, useLiveQuery } from 'use-fireproof';
 import { connect } from '@fireproof/partykit';
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
+import { TimesyncProvider } from './TimesyncContext';
 import './App.css';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
+  const { database } = useFireproof();
+  //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
+  const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev";
 
   let beats = {};
   const result = useLiveQuery('type', { key: 'beat' });
   result.rows.forEach(row => {
     beats[row.doc._id] = row.doc.isActive;
   });
-  const { database } = useFireproof();
-  //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
-  const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev"
 
   // Connect to PartyKit
   useEffect(() => {
@@ -49,18 +50,6 @@ function App() {
     connectToPartyKit();
   }, [database]);
 
-  useEffect(() => {
-    const connectToTimesync = async () => {
-      const timesyncURL = partyKitHost + "/parties/partytime/w00t";
-      const ts = timesync.create({
-        server: timesyncURL,
-        timeout: 1000,
-      });
-    }
-
-    connectToTimesync();
-  }, []);
-
   const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
     try {
       let doc;
@@ -88,12 +77,36 @@ function App() {
     }
   };
 
+  const updateBPM = async (bpm, ts) => {
+    if (!ts) {
+      console.error('Timesync object not initialized');
+      return;
+    }
+
+    const timestamp = ts.now();
+    const bpmDoc = {
+      _id: 'bpm',
+      type: 'bpm',
+      bpm: bpm,
+      lastChanged: timestamp
+    };
+
+    try {
+      await database.put(bpmDoc);
+      console.log('BPM updated:', bpmDoc);
+    } catch (error) {
+      console.error('Error updating BPM:', error);
+    }
+  };
+
   return (
-    <div className="app">
-      <h1 className="app-title">Loopernet Demo</h1>
-      <TopControls database={database} />
-      <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
-    </div>
+    <TimesyncProvider partyKitHost={partyKitHost}>
+      <div className="app">
+        <h1 className="app-title">Loopernet Demo</h1>
+        <TopControls database={database} updateBPM={updateBPM} />
+        <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
+      </div>
+    </TimesyncProvider>
   );
 }
 

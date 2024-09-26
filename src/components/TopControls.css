@@ -52,6 +52,16 @@
   margin-right: 10px;
 }
 
+.bpm-slider {
+  width: 150px; /* Adjust width as needed */
+  margin-right: 10px;
+}
+
+.bpm-value {
+  width: 40px;
+  text-align: center;
+}
+
 .bpm-input {
   width: 60px;
   text-align: center;

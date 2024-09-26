@@ -1,8 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLiveQuery } from 'use-fireproof';
+import { useTimesync } from '../TimesyncContext';
 import './TopControls.css';
 
-const TopControls = ({ database, setBeats }) => {
+const TopControls = ({ database, updateBPM }) => {
+  const ts = useTimesync(); // Access the timesync object
   const [bpm, setBpm] = useState(120); // Default BPM value
+  const [tempBpm, setTempBpm] = useState(120); // Temporary BPM value for the slider
+  const timeoutRef = useRef(null);
+
+  // Fetch BPM from the database
+  const bpmResult = useLiveQuery('type', { key: 'bpm' });
+
+  useEffect(() => {
+    if (bpmResult.rows.length > 0) {
+      const bpmDoc = bpmResult.rows[0].doc;
+      setBpm(bpmDoc.bpm);
+      setTempBpm(bpmDoc.bpm);
+    }
+  }, [bpmResult]);
 
   const handleClear = async () => {
     try {
@@ -40,19 +56,45 @@ const TopControls = ({ database, setBeats }) => {
     }
   };
 
+  const handleBpmChange = (e) => {
+    const newBpm = Math.max(30, Math.min(240, parseInt(e.target.value, 10)));
+    setTempBpm(newBpm);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setBpm(newBpm);
+      updateBPM(newBpm, ts); // Update BPM in the database with the timesync object
+    }, 250); // throttle with 250ms delay
+
+  };
+
+  const handleBpmChangeComplete = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setBpm(tempBpm);
+    updateBPM(tempBpm, ts); // Update BPM in the database with the timesync object
+  };
+
   return (
     <div className="top-controls">
       <div className="bpm-control">
-        <label htmlFor="bpm-input">BPM</label>
+        <label htmlFor="bpm-slider">BPM</label>
         <input
-          id="bpm-input"
-          type="number"
-          className="bpm-input"
-          value={bpm}
-          onChange={(e) => setBpm(Math.max(30, Math.min(240, parseInt(e.target.value, 10))))}
+          id="bpm-slider"
+          type="range"
+          className="bpm-slider"
+          value={tempBpm}
+          onChange={handleBpmChange}
+          onMouseUp={handleBpmChangeComplete}
+          onTouchEnd={handleBpmChangeComplete}
           min="30"
           max="240"
         />
+        <span className="bpm-value">{tempBpm}</span>
       </div>
       <button className="control-button" onClick={handleClear}>Clear</button>
       <button className="control-button nuke" onClick={handleNuke}>Nuke</button>
