@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
-import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer } from '../AudioUtils';
+import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer, getAudioContext } from '../AudioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
-const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) => {
+const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
-  const ts = useTimesync(); // Access the timesync object
+  const ts = useTimesync();
   const [currentQuarterBeat, setCurrentQuarterBeat] = useState(0);
   const [beatTrigger, setBeatTrigger] = useState(0);
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
+  const audioContextStartTime_s = useRef(null);
+  const timesyncStartTime_ms = useRef(null);
 
   useEffect(() => {
     const loadInstrumentSound = async () => {
@@ -25,38 +27,64 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) =
     loadInstrumentSound();
   }, [instrument]);
 
-  const scheduleNextPattern = useCallback(() => {
-    if (!soundBuffer || !playing) return;
+  useEffect(() => {
+    if (playing) {
+      audioContextStartTime_s.current = getAudioContext().currentTime;
+      timesyncStartTime_ms.current = ts.now();
+    } else {
+      audioContextStartTime_s.current = null;
+      timesyncStartTime_ms.current = null;
+    }
+  }, [playing, ts]);
 
-    clearScheduledEvents(scheduledEventsRef.current);
-    scheduledEventsRef.current = scheduleBeats(instrument, soundBuffer, beats, bpm, playing);
-  }, [instrument, soundBuffer, beats, bpm, playing]);
+  const scheduleNextPattern = useCallback(() => {
+    if (!soundBuffer || !playing || !ts || audioContextStartTime_s.current === null || timesyncStartTime_ms.current === null) return;
+
+    const currentTimesyncTime_ms = ts.now();
+    const elapsedTimesyncTime_ms = currentTimesyncTime_ms - timesyncStartTime_ms.current;
+    const currentAudioTime_s = audioContextStartTime_s.current + (elapsedTimesyncTime_ms / 1000);
+
+    const patternDuration_s = (60 / bpm) * 4; // Duration of 4 beats in seconds
+    const patternDuration_ms = patternDuration_s * 1000;
+    const nextPatternStart_ms = Math.ceil(currentTimesyncTime_ms / patternDuration_ms) * patternDuration_ms;
+
+    //clearScheduledEvents(scheduledEventsRef.current);
+    scheduledEventsRef.current = scheduleBeats(
+      instrument,
+      soundBuffer,
+      beats,
+      bpm,
+      playing,
+      nextPatternStart_ms,
+      currentAudioTime_s + ((nextPatternStart_ms - currentTimesyncTime_ms) / 1000)
+    );
+  }, [instrument, soundBuffer, beats, bpm, playing, ts]);
 
   useEffect(() => {
     if (playing) {
       scheduleNextPattern();
-      // Schedule every 4 beats (16 quarter beats)
-      const intervalId = setInterval(scheduleNextPattern, (60 / bpm) * 1000 * 4);
+      const intervalDuration_ms = (60 / bpm) * 1000 * 4;
+      const intervalId = setInterval(scheduleNextPattern, intervalDuration_ms);
       return () => clearInterval(intervalId);
     }
   }, [playing, scheduleNextPattern, bpm]);
 
   const calculateCurrentQuarterBeat = useCallback(() => {
-    if (!ts || !bpm || !lastChanged || !playing) return 0;
-    const currentTime = ts.now();
-    const elapsedTime = (currentTime - lastChanged) / 1000; // Convert to seconds
-    const quarterBeatsElapsed = (elapsedTime / 60) * bpm * 4; // Multiply by 4 for quarter beats
+    if (!ts || !bpm || !lastChanged_ms || !playing) return 0;
+    const currentTime_ms = ts.now();
+    const elapsedTime_ms = currentTime_ms - lastChanged_ms;
+    const quarterBeatsElapsed = (elapsedTime_ms / 60000) * bpm * 4; // 60000 ms in a minute
     const absoluteQuarterBeat = Math.floor(quarterBeatsElapsed);
     return absoluteQuarterBeat % patternLength;
-  }, [ts, bpm, lastChanged, patternLength, playing]);
+  }, [ts, bpm, lastChanged_ms, patternLength, playing]);
 
   useEffect(() => {
-    if (!ts || !bpm || !lastChanged || !playing) {
+    if (!ts || !bpm || !lastChanged_ms || !playing) {
       setCurrentQuarterBeat(0);
       return;
     }
 
-    const quarterBeatInterval = 15000 / bpm; // Calculate milliseconds per quarter beat
+    const quarterBeatInterval_ms = 15000 / bpm;
     let lastQuarterBeat = -1;
 
     const checkBeat = () => {
@@ -68,10 +96,10 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) =
       }
     };
 
-    const intervalId = setInterval(checkBeat, quarterBeatInterval / 2); // Check twice per quarter beat
+    const intervalId = setInterval(checkBeat, quarterBeatInterval_ms / 2);
 
     return () => clearInterval(intervalId);
-  }, [ts, bpm, lastChanged, calculateCurrentQuarterBeat, playing]);
+  }, [ts, bpm, lastChanged_ms, calculateCurrentQuarterBeat, playing]);
 
   const playSound = () => {
     if (soundBuffer) {
@@ -81,8 +109,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) =
     }
   };
 
-  // Log for debugging
-  //console.log(`Pattern ${instrument} rendering. Quarter Beat: ${currentQuarterBeat}, Trigger: ${beatTrigger}`);
+  console.log(`painting ${instrument} ${currentQuarterBeat}`);
 
   return (
     <div className="pattern">
