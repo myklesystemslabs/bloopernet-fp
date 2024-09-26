@@ -4,7 +4,7 @@ import { loadSound, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css'; // We'll create this CSS file
 
-const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged }) => {
+const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const ts = useTimesync(); // Access the timesync object
   const [currentQuarterBeat, setCurrentQuarterBeat] = useState(0);
@@ -25,17 +25,20 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged }) => {
   }, [instrument]);
 
   const calculateCurrentQuarterBeat = useCallback(() => {
-    if (!ts || !bpm || !lastChanged) return 0;
+    if (!ts || !bpm || !lastChanged || !playing) return 0;
     const currentTime = ts.now();
     const elapsedTime = (currentTime - lastChanged) / 1000; // Convert to seconds
     const beatsElapsed = (elapsedTime / 60) * bpm;
     const quarterBeatsElapsed = beatsElapsed * 4; // Multiply by 4 for quarter beats
     const absoluteQuarterBeat = Math.floor(quarterBeatsElapsed);
     return absoluteQuarterBeat % patternLength;
-  }, [ts, bpm, lastChanged, patternLength]);
+  }, [ts, bpm, lastChanged, patternLength, playing]);
 
   useEffect(() => {
-    if (!ts || !bpm || !lastChanged) return;
+    if (!ts || !bpm || !lastChanged || !playing) {
+      setCurrentQuarterBeat(0);
+      return;
+    }
 
     const quarterBeatInterval = 15000 / bpm; // Calculate milliseconds per quarter beat
     let lastQuarterBeat = -1;
@@ -52,7 +55,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged }) => {
     const intervalId = setInterval(checkBeat, quarterBeatInterval / 2); // Check twice per quarter beat
 
     return () => clearInterval(intervalId);
-  }, [ts, bpm, lastChanged, calculateCurrentQuarterBeat]);
+  }, [ts, bpm, lastChanged, calculateCurrentQuarterBeat, playing]);
 
   const playSound = () => {
     if (soundBuffer) {
@@ -75,7 +78,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged }) => {
             instrumentName={instrument} 
             beatIndex={index} 
             isActive={beats[`beat-${instrument.toLowerCase()}-${index}`] || false}
-            isCurrent={index === currentQuarterBeat}
+            isCurrent={playing && index === currentQuarterBeat}
             updateBeat={updateBeat}
           />
         ))}

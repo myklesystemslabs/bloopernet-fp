@@ -3,22 +3,22 @@ import { useLiveQuery } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import './TopControls.css';
 
-const TopControls = ({ database, updateBPM }) => {
-  const ts = useTimesync(); // Access the timesync object
-  const [bpm, setBpm] = useState(120); // Default BPM value
-  const [tempBpm, setTempBpm] = useState(120); // Temporary BPM value for the slider
+const TopControls = ({ database }) => {
+  const ts = useTimesync();
+  const [tempBpm, setTempBpm] = useState(120);
+  const [playing, setPlaying] = useState(false);
   const timeoutRef = useRef(null);
 
-  // Fetch BPM from the database
+  // Fetch the current BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
+  const bpmDoc = bpmResult.rows[0]?.doc;
 
   useEffect(() => {
-    if (bpmResult.rows.length > 0) {
-      const bpmDoc = bpmResult.rows[0].doc;
-      setBpm(bpmDoc.bpm);
+    if (bpmDoc) {
       setTempBpm(bpmDoc.bpm);
+      setPlaying(bpmDoc.playing);
     }
-  }, [bpmResult]);
+  }, [bpmDoc]);
 
   const handleClear = async () => {
     try {
@@ -56,6 +56,26 @@ const TopControls = ({ database, updateBPM }) => {
     }
   };
 
+  const updateBPMDoc = async (updates) => {
+    const timestamp = ts.now();
+    const newBpmDoc = {
+      ...bpmDoc,
+      ...updates,
+      lastChanged: timestamp
+    };
+
+    try {
+      if (bpmDoc) {
+        await database.put({ ...bpmDoc, ...newBpmDoc });
+      } else {
+        await database.put({ _id: 'bpm', type: 'bpm', ...newBpmDoc });
+      }
+    } catch (error) {
+      console.error('Error updating BPM document:', error);
+    }
+  };
+
+
   const handleBpmChange = (e) => {
     const newBpm = Math.max(30, Math.min(240, parseInt(e.target.value, 10)));
     setTempBpm(newBpm);
@@ -65,22 +85,32 @@ const TopControls = ({ database, updateBPM }) => {
     }
 
     timeoutRef.current = setTimeout(() => {
-      setBpm(newBpm);
-      updateBPM(newBpm, ts); // Update BPM in the database with the timesync object
-    }, 250); // throttle with 250ms delay
-
+      updateBPMDoc({ bpm: newBpm });
+    }, 500);
   };
 
   const handleBpmChangeComplete = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    setBpm(tempBpm);
-    updateBPM(tempBpm, ts); // Update BPM in the database with the timesync object
+    updateBPMDoc({ bpm: tempBpm });
+  };
+
+  const togglePlay = () => {
+    const newPlayingState = !playing;
+    setPlaying(newPlayingState);
+    updateBPMDoc({ 
+      playing: newPlayingState, 
+      bpm: tempBpm,
+      lastChanged: ts.now() // Reset the start time when playing is toggled to true
+    });
   };
 
   return (
     <div className="top-controls">
+      <button className="play-pause-button" onClick={togglePlay}>
+        {playing ? 'Pause' : 'Play'}
+      </button>
       <div className="bpm-control">
         <label htmlFor="bpm-slider">BPM</label>
         <input
