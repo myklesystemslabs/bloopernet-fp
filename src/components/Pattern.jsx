@@ -1,15 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
-import { loadSound, playSoundBuffer } from '../audioUtils';
+import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer } from '../AudioUtils';
 import { useTimesync } from '../TimesyncContext';
-import './Pattern.css'; // We'll create this CSS file
+import './Pattern.css';
 
 const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const ts = useTimesync(); // Access the timesync object
   const [currentQuarterBeat, setCurrentQuarterBeat] = useState(0);
-  const [beatTrigger, setBeatTrigger] = useState(0); // New state to trigger re-renders
-  const patternLength = 16; // 16 beats * 4 quarters per beat
+  const [beatTrigger, setBeatTrigger] = useState(0);
+  const patternLength = 16; // 16 quarter-beats
+  const scheduledEventsRef = useRef([]);
 
   useEffect(() => {
     const loadInstrumentSound = async () => {
@@ -24,12 +25,18 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged, playing }) =
     loadInstrumentSound();
   }, [instrument]);
 
+  useEffect(() => {
+    clearScheduledEvents(scheduledEventsRef.current);
+    scheduledEventsRef.current = scheduleBeats(instrument, soundBuffer, beats, bpm, playing);
+
+    return () => clearScheduledEvents(scheduledEventsRef.current);
+  }, [instrument, soundBuffer, beats, bpm, playing]);
+
   const calculateCurrentQuarterBeat = useCallback(() => {
     if (!ts || !bpm || !lastChanged || !playing) return 0;
     const currentTime = ts.now();
     const elapsedTime = (currentTime - lastChanged) / 1000; // Convert to seconds
-    const beatsElapsed = (elapsedTime / 60) * bpm;
-    const quarterBeatsElapsed = beatsElapsed * 4; // Multiply by 4 for quarter beats
+    const quarterBeatsElapsed = (elapsedTime / 60) * bpm * 4; // Multiply by 4 for quarter beats
     const absoluteQuarterBeat = Math.floor(quarterBeatsElapsed);
     return absoluteQuarterBeat % patternLength;
   }, [ts, bpm, lastChanged, patternLength, playing]);
