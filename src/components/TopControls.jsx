@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './TopControls.css';
 
 const TopControls = ({ database, setBeats }) => {
+  const [bpm, setBpm] = useState(120); // Default BPM value
+
   const handleClear = async () => {
     try {
       // Query for documents where type equals "beat"
@@ -40,6 +42,18 @@ const TopControls = ({ database, setBeats }) => {
 
   return (
     <div className="top-controls">
+      <div className="bpm-control">
+        <label htmlFor="bpm-input">BPM</label>
+        <input
+          id="bpm-input"
+          type="number"
+          className="bpm-input"
+          value={bpm}
+          onChange={(e) => setBpm(Math.max(30, Math.min(240, parseInt(e.target.value, 10))))}
+          min="30"
+          max="240"
+        />
+      </div>
       <button className="control-button" onClick={handleClear}>Clear</button>
       <button className="control-button nuke" onClick={handleNuke}>Nuke</button>
     </div>

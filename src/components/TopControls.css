@@ -1,5 +1,8 @@
 .top-controls {
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the controls horizontally */
+  width: 100%; /* Ensure the container takes full width */
 }
 
 .control-button {
@@ -11,6 +14,7 @@
   border-radius: 4px;
   background-color: #1976d2;
   color: white;
+  height: 40px; /* Ensure buttons have the same height */
 }
 
 .control-button:hover {
@@ -18,7 +22,8 @@
 }
 
 .control-button.nuke {
-  background-color: #d32f2f;
+  background-color: red;
+  color: white;
 }
 
 .control-button.nuke:hover {
@@ -31,4 +36,23 @@
 
 .control-button.resync:hover {
   background-color: #2e7d32;
+}
+
+.bpm-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-right: 10px;
+  height: 40px; /* Adjust to match the height of other controls */
+}
+
+.bpm-control label {
+  margin-right: 10px;
+}
+
+.bpm-input {
+  width: 60px;
+  text-align: center;
 }
