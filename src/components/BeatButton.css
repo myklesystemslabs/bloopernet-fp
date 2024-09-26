@@ -1,11 +1,19 @@
 .beat-button {
   width: 30px;
   height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 2px;
+  margin: 2px;
+  border: 1px solid #ccc;
+  background-color: #fff;
   cursor: pointer;
+}
+
+.beat-button.active {
+  background-color: #000;
+  color: #fff;
+}
+
+.beat-button.current {
+  background-color: orange;
 }
 
 .beat-button-inner {
