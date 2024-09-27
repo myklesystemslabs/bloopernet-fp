@@ -28,7 +28,7 @@ const PatternSet = ({ instruments, beats, updateBeat}) => {
     if (playing) {
       const intervalId = setInterval(() => {
         setElapsedQuarterBeats(calculateElapsedQuarterBeats());
-      }, 50); // Update 5 times per second for smooth animation
+      }, 50); // Update 20 times per second for smooth animation
       return () => clearInterval(intervalId);
     } else {
       setElapsedQuarterBeats(0);

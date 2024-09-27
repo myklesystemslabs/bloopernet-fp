@@ -43,6 +43,7 @@ export const scheduleBeats = (instrument, soundBuffer, beats, bpm, playing, next
         source.connect(getAudioContext().destination);
         source.start();
       }, audioTime_s);
+      console.log(`Scheduled event at delta ${audioTime_s - getAudioContext().currentTime}`);
       
       scheduledEvents.push(event);
     }

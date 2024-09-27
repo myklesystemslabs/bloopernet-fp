@@ -29,11 +29,17 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, 
 
   useEffect(() => {
     if (playing) {
+      // Reset timing references when playback starts
       audioContextStartTime_s.current = getAudioContext().currentTime;
       timesyncStartTime_ms.current = ts.now();
+      // Schedule the first beat immediately
+      scheduleNextQuarterBeat();
     } else {
       audioContextStartTime_s.current = null;
       timesyncStartTime_ms.current = null;
+      // Clear any scheduled events when stopping
+      clearScheduledEvents(scheduledEventsRef.current);
+      scheduledEventsRef.current = [];
     }
   }, [playing, ts]);
 
@@ -42,23 +48,32 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, 
 
     const currentTimesyncTime_ms = ts.now();
     const elapsedTimesyncTime_ms = currentTimesyncTime_ms - timesyncStartTime_ms.current;
-    const currentAudioTime_s = audioContextStartTime_s.current + (elapsedTimesyncTime_ms / 1000);
+    const currentAudioTime_s = getAudioContext().currentTime;
 
     const quarterBeatDuration_s = 15 / bpm;
     const quarterBeatDuration_ms = quarterBeatDuration_s * 1000;
-    const nextQuarterBeatStart_ms = Math.ceil(currentTimesyncTime_ms / quarterBeatDuration_ms) * quarterBeatDuration_ms;
 
-    clearScheduledEvents(scheduledEventsRef.current);
-    scheduledEventsRef.current = scheduleBeats(
-      instrument,
-      soundBuffer,
-      beats,
-      bpm,
-      playing,
-      nextQuarterBeatStart_ms,
-      currentAudioTime_s + ((nextQuarterBeatStart_ms - currentTimesyncTime_ms) / 1000),
-      1 // Schedule 1 quarter beat ahead
-    );
+    // Calculate the next quarter beat start time
+    const nextQuarterBeatNumber = Math.ceil(elapsedTimesyncTime_ms / quarterBeatDuration_ms);
+    const nextQuarterBeatStart_ms = nextQuarterBeatNumber * quarterBeatDuration_ms;
+
+    // Calculate when this beat should play in audio context time
+    const audioTimeToSchedule_s = audioContextStartTime_s.current + (nextQuarterBeatStart_ms / 1000);
+
+    // Only schedule if it's in the future
+    if (audioTimeToSchedule_s > currentAudioTime_s) {
+      clearScheduledEvents(scheduledEventsRef.current);
+      scheduledEventsRef.current = scheduleBeats(
+        instrument,
+        soundBuffer,
+        beats,
+        bpm,
+        playing,
+        timesyncStartTime_ms.current + nextQuarterBeatStart_ms,
+        audioTimeToSchedule_s,
+        1 // Schedule 1 quarter beat ahead
+      );
+    }
 
   }, [instrument, soundBuffer, beats, bpm, playing, ts]);
 
