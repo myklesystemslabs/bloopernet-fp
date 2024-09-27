@@ -2,28 +2,34 @@
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .instrument-button {
-  width: 100px;
+  width: 120px;
+  min-width: 120px;
   margin-right: 20px;
-  padding: 5px;
+  padding: 10px;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
   text-align: left;
+  font-size: 16px;
 }
 
 .beat-buttons {
   display: flex;
   flex-grow: 1;
   align-items: center;
+  justify-content: space-between;
 }
 
 .beat-group {
   display: flex;
-  padding: 5px;
+  justify-content: space-around;
+  flex-grow: 1;
+  padding: 10px;
 }
 
 .beat-group:nth-child(odd) {

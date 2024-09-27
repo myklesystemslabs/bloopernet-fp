@@ -38,23 +38,7 @@ const TopControls = ({ database }) => {
     }
   };
 
-  const handleNuke = async () => {
-    try {
-      // Get all documents
-      const allDocs = await database.allDocs({ include_docs: true });
-      
-      // Filter for beat documents by _id format
-      const beatDocs = allDocs.rows.filter(row => row.value.beatIndex != undefined);
-      
-      // Delete all beat documents
-      const deletePromises = beatDocs.map(row => database.del(row.key));
-      
-      await Promise.all(deletePromises);
-      console.log(`All beats nuked (deleted). Total: ${beatDocs.length}`);
-    } catch (error) {
-      console.error('Error nuking beats:', error);
-    }
-  };
+  // Remove the handleNuke function
 
   const updateBPMDoc = async (updates) => {
     const timestamp = ts.now();
@@ -127,7 +111,7 @@ const TopControls = ({ database }) => {
         <span className="bpm-value">{tempBpm}</span>
       </div>
       <button className="control-button" onClick={handleClear}>Clear</button>
-      <button className="control-button nuke" onClick={handleNuke}>Nuke</button>
+      {/* Remove the Nuke button */}
     </div>
   );
 };
