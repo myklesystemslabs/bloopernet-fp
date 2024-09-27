@@ -1,34 +1,51 @@
 .beat-button {
   width: 30px;
   height: 30px;
-  margin: 2px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-.beat-button.active {
-  background-color: #000;
-  color: #fff;
-}
-
-.beat-button.current {
-  background-color: orange;
-}
-
-.beat-button-inner {
-  width: 10px;
-  height: 10px;
   border-radius: 50%;
-  transition: all 0.1s ease;
+  border: none;
+  cursor: pointer;
+  margin: 2px;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.beat-button.inactive .beat-button-inner {
+.beat-button::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.beat-button:not(.active)::after {
+  width: 40%; /* 20px / 30px */
+  height: 40%;
   background-color: #8B4513; /* Brown color */
 }
 
-.beat-button.active .beat-button-inner {
-  width: 26px;
-  height: 26px;
+.beat-button.active::after {
   background-color: #FF0000; /* Red color */
+}
+
+.beat-button.current {
+  box-shadow: 0 0 0 4px #FFA500; /* Orange highlight for current beat */
+}
+
+/* Subtle background for beat groups */
+.beat-button.beat-group-0,
+.beat-button.beat-group-2 {
+  background-color: rgba(240, 240, 240, 0.1);
+}
+
+.beat-button.beat-group-1,
+.beat-button.beat-group-3 {
+  background-color: rgba(224, 224, 224, 0.1);
+}
+
+/* Ensure active beats stand out */
+.beat-button.active::after {
+  background-color: #FF0000 !important;
 }

@@ -1,17 +1,35 @@
 .pattern {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .instrument-button {
   width: 100px;
-  margin-right: 10px;
+  margin-right: 20px;
   padding: 5px;
-  font-size: 14px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   cursor: pointer;
+  text-align: left;
 }
 
 .beat-buttons {
   display: flex;
+  flex-grow: 1;
+  align-items: center;
+}
+
+.beat-group {
+  display: flex;
+  padding: 5px;
+}
+
+.beat-group:nth-child(odd) {
+  background-color: #f0f0f0; /* Light gray for odd groups */
+}
+
+.beat-group:nth-child(even) {
+  background-color: #e0e0e0; /* Slightly darker gray for even groups */
 }

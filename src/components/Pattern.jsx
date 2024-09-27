@@ -93,20 +93,38 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, 
     }
   };
 
-  return (
-    <div className="pattern">
-      <button className="instrument-button" onClick={playSound}>{instrument}</button>
-      <div className="beat-buttons">
-        {Array.from({ length: patternLength }, (_, index) => (
+  const renderBeatButtons = () => {
+    const groups = [];
+    for (let i = 0; i < 4; i++) {
+      const groupButtons = [];
+      for (let j = 0; j < 4; j++) {
+        const index = i * 4 + j;
+        groupButtons.push(
           <BeatButton 
-            key={`${instrument}-${index}`} 
+            key={`${instrument}-${index}`}
             instrumentName={instrument} 
             beatIndex={index} 
             isActive={beats[`beat-${instrument.toLowerCase()}-${index}`] || false}
             isCurrent={playing && index === currentQuarterBeat}
             updateBeat={updateBeat}
+            className={`beat-group-${i}`}
           />
-        ))}
+        );
+      }
+      groups.push(
+        <div key={`group-${i}`} className="beat-group">
+          {groupButtons}
+        </div>
+      );
+    }
+    return groups;
+  };
+
+  return (
+    <div className="pattern">
+      <button className="instrument-button" onClick={playSound}>{instrument}</button>
+      <div className="beat-buttons">
+        {renderBeatButtons()}
       </div>
     </div>
   );

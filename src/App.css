@@ -9,3 +9,16 @@
   font-size: 2rem;
   margin-bottom: 20px;
 }
+
+.app-container {
+  /* existing styles */
+}
+
+.top-controls {
+  /* existing styles */
+  margin-bottom: 20px; /* Add space below TopControls */
+}
+
+.pattern-set {
+  /* existing styles */
+}

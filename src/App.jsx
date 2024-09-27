@@ -103,8 +103,12 @@ function App() {
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
         <h1 className="app-title">Loopernet Demo</h1>
-        <TopControls database={database} updateBPM={updateBPM} />
-        <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
+        <div className="top-controls">
+          <TopControls database={database} updateBPM={updateBPM} />
+        </div>
+        <div className="pattern-set">
+          <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
+        </div> 
       </div>
     </TimesyncProvider>
   );
