@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
-import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer, getAudioContext } from '../AudioUtils';
+import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer, getAudioContext } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
