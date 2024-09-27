@@ -25,17 +25,17 @@ export const playSoundBuffer = (buffer) => {
   source.start();
 };
 
-export const scheduleBeats = (instrument, soundBuffer, beats, bpm, playing, nextPatternStart_ms, scheduleStart_s) => {
+export const scheduleBeats = (instrument, soundBuffer, beats, bpm, playing, nextQuarterBeatStart_ms, scheduleStart_s, quarterBeatsToSchedule = 1) => {
   if (!clock || !soundBuffer || !playing) return [];
 
-  const secondsPerBeat_s = 60 / bpm;
-  const patternLength = 16; // 16 quarter beats
+  const secondsPerQuarterBeat_s = 15 / bpm;
   const scheduledEvents = [];
 
-  for (let i = 0; i < patternLength; i++) {
-    if (beats[`beat-${instrument.toLowerCase()}-${i}`]) {
-      const beatTime_ms = nextPatternStart_ms + (i * secondsPerBeat_s * 250); // 250ms per quarter beat
-      const audioTime_s = scheduleStart_s + (beatTime_ms - nextPatternStart_ms) / 1000;
+  for (let i = 0; i < quarterBeatsToSchedule; i++) {
+    const quarterBeatIndex = (Math.floor(nextQuarterBeatStart_ms / (secondsPerQuarterBeat_s * 1000)) + i) % 16;
+    if (beats[`beat-${instrument.toLowerCase()}-${quarterBeatIndex}`]) {
+      const beatTime_ms = nextQuarterBeatStart_ms + (i * secondsPerQuarterBeat_s * 1000);
+      const audioTime_s = scheduleStart_s + (beatTime_ms - nextQuarterBeatStart_ms) / 1000;
       
       const event = clock.callbackAtTime(() => {
         const source = getAudioContext().createBufferSource();
