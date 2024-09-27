@@ -4,16 +4,15 @@ import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer, getAud
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
-const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing }) => {
+const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, elapsedQuarterBeats }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const ts = useTimesync();
-  const [currentQuarterBeat, setCurrentQuarterBeat] = useState(0);
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
   const audioContextStartTime_s = useRef(null);
   const timesyncStartTime_ms = useRef(null);
 
-  console.log(`painting ${instrument} ${currentQuarterBeat}`);
+  const currentQuarterBeat = elapsedQuarterBeats % patternLength;
 
   useEffect(() => {
     const loadInstrumentSound = async () => {
@@ -35,17 +34,8 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing }
     } else {
       audioContextStartTime_s.current = null;
       timesyncStartTime_ms.current = null;
-      setCurrentQuarterBeat(0);
     }
   }, [playing, ts]);
-
-  const calculateCurrentQuarterBeat = useCallback(() => {
-    if (!ts || !bpm || !lastChanged_ms || !playing) return 0;
-    const currentTime_ms = ts.now();
-    const elapsedTime_ms = currentTime_ms - lastChanged_ms;
-    const quarterBeatsElapsed = (elapsedTime_ms / 60000) * bpm * 4; // 60000 ms in a minute
-    return Math.floor(quarterBeatsElapsed) % patternLength;
-  }, [ts, bpm, lastChanged_ms, patternLength, playing]);
 
   const scheduleNextQuarterBeat = useCallback(() => {
     if (!soundBuffer || !playing || !ts || audioContextStartTime_s.current === null || timesyncStartTime_ms.current === null) return;
@@ -70,11 +60,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing }
       1 // Schedule 1 quarter beat ahead
     );
 
-    // Update current quarter beat
-    const newQuarterBeat = calculateCurrentQuarterBeat();
-    setCurrentQuarterBeat(newQuarterBeat);
-
-  }, [instrument, soundBuffer, beats, bpm, playing, ts, calculateCurrentQuarterBeat]);
+  }, [instrument, soundBuffer, beats, bpm, playing, ts]);
 
   useEffect(() => {
     if (playing) {
@@ -98,7 +84,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing }
       <div className="beat-buttons">
         {Array.from({ length: patternLength }, (_, index) => (
           <BeatButton 
-            key={index} 
+            key={`${instrument}-${index}`} 
             instrumentName={instrument} 
             beatIndex={index} 
             isActive={beats[`beat-${instrument.toLowerCase()}-${index}`] || false}

@@ -102,7 +102,7 @@ const TopControls = ({ database }) => {
     updateBPMDoc({ 
       playing: newPlayingState, 
       bpm: tempBpm,
-      lastChanged: ts.now() // Reset the start time when playing is toggled to true
+      lastChanged: ts.now() // Reset the start time when playing is toggled to true // todo: change to lastChanged_ms
     });
   };
 
