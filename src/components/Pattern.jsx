@@ -72,6 +72,8 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
         1,
         nextQuarterBeatNumber
       );
+    } else {
+      console.log("too late to schedule by ", (audioTimeToSchedule_s - currentAudioTime_s), " seconds");
     }
 
   }, [instrument, soundBuffer, beats, bpm, playing, ts]);
@@ -93,8 +95,10 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       console.log("play started");
       setWasPlaying(true);
       // Reset timing references when playback starts
-      audioContextStartTime_s.current = getAudioContext().currentTime;
       timesyncStartTime_ms.current = bpmDoc?.lastChanged_ms || ts.now();
+      // time between when play started and when we rendered
+      const delta_s = (ts.now() - (bpmDoc?.lastChanged_ms || 0)) / 1000;
+      audioContextStartTime_s.current = getAudioContext().currentTime - delta_s;
       // console.log("audioContextStartTime secs: ", audioContextStartTime_s.current);
       // console.log("timesyncStartTime secs: ", timesyncStartTime_ms.current / 1000);
       // console.log("start times skew: ", ( ((audioContextStartTime_s.current *1000) - (timesyncStartTime_ms.current ) ) / 1000));

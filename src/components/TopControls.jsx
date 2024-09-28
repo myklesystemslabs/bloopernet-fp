@@ -45,7 +45,7 @@ const TopControls = () => {
     const newBpmDoc = {
       ...bpmDoc,
       ...updates,
-      lastChanged: timestamp
+      lastChanged_ms: timestamp
     };
 
     try {
