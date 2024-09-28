@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLiveQuery } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
+import { useFireproof } from 'use-fireproof';
 import './TopControls.css';
 
-const TopControls = ({ database }) => {
+const TopControls = () => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
   const timeoutRef = useRef(null);
-
+  const { database, useLiveQuery } = useFireproof("drum-machine");
   // Fetch the current BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
