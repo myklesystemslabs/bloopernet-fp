@@ -27,6 +27,9 @@
 }
 
 @media (max-width: 768px) {
+  #root {
+    align-items: normal !important;
+  }
   .pattern {
     flex-direction: column;
     align-items: stretch;

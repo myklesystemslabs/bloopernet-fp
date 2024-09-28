@@ -8,6 +8,7 @@ import './App.css';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
+  //const { database } = useFireproof("fireproof", {public: true});
   const { database } = useFireproof();
   //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
   const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev";
@@ -103,12 +104,8 @@ function App() {
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
         <h1 className="app-title">Loopernet Demo</h1>
-        <div className="top-controls">
-          <TopControls database={database} updateBPM={updateBPM} />
-        </div>
-        <div className="pattern-set">
-          <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
-        </div> 
+        <TopControls database={database} updateBPM={updateBPM} />
+        <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
       </div>
     </TimesyncProvider>
   );
