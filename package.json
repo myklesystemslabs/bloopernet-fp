@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fireproof/aws": "^0.18.0",
     "@fireproof/partykit": "^0.18.0",
     "@mui/material": "^6.1.0",
     "partysocket": "1.0.2",
