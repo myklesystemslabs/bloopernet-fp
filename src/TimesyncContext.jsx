@@ -11,7 +11,7 @@ export const TimesyncProvider = ({ children, partyKitHost }) => {
 
   useEffect(() => {
     const connectToTimesync = async () => {
-      const timesyncURL = `${partyKitHost}/parties/partytime/w00t`;
+      const timesyncURL = `https://${partyKitHost}/parties/partytime/w00t`;
       const tsInstance = timesync.create({
         server: timesyncURL,
         timeout: 1000,
