@@ -49,65 +49,21 @@ function App() {
     beats[row.doc._id] = row.doc.isActive;
   });
 
-  // Connect to PartyKit
-  // useEffect(() => {
-  //   const connectToPartyKit = async () => {
-  //     if (window.fireproofIsConnected) {
-  //       console.log('Already connected, skipping...');
-  //       return; // Prevent multiple connections
-  //     }
-
-  //     if (!partyKitHost) {
-  //       console.error('PartyKit host not set. Please check your .env file.');
-  //       return;
-  //     }
-
-  //     console.log('PartyKit Host:', partyKitHost);  // Debug log
-  //     try {
-  //       // const connection = connect.partykit(database, partyKitHost, {
-  //       //   onConnect: () => console.log("Connected to PartyKit server"),
-  //       //   onDisconnect: () => console.log("Disconnected from PartyKit server"),
-  //       //   onMessage: (message) => console.log("Received message from PartyKit:", message),
-  //       //   onSend: (message) => console.log("Sending message to PartyKit:", message),
-  //       // });
-
-  //       const connection = partykitS3(database, partyKitHost);
-
-  //       console.log('PartyKit connection established:', connection);
-  //       window.fireproofIsConnected = true;
-  //     } catch (error) {
-  //       console.error('Failed to connect to PartyKit:', error);
-  //     }
-  //   };
-
-  //   connectToPartyKit();
-  // }, [database]);
-
   const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
-    try {
-      let doc;
-      try {
-        doc = await database.get(id);
-      } catch (error) {
-        if (error.message.includes('Not found')) {
-          // Create a new document if it doesn't exist
-          doc = {
-            _id: id,
-            type: 'beat',
-            isActive: isActive,
-            instrumentName: instrumentName,
-            beatIndex: beatIndex
-          };
-        } else {
-          throw error;
-        }
+    const doc = await database.get(id).catch(error => {
+      if (error.message.includes('Not found')) {
+        return {
+          _id: id,
+          type: 'beat',
+          isActive: isActive,
+          instrumentName: instrumentName,
+          beatIndex: beatIndex
+        };
+      } else {
+        throw error;
       }
-      
-      const updatedDoc = { ...doc, isActive };
-      await database.put(updatedDoc);
-    } catch (error) {
-      console.error('Error updating beat:', error);
-    }
+    })
+    await database.put({ ...doc, isActive });
   };
 
   const updateBPM = async (bpm, ts) => {
