@@ -13,7 +13,8 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
   const audioContextStartTime_s = useRef(null);
   const timesyncStartTime_ms = useRef(null);
 
-  const currentQuarterBeat = (elapsedQuarterBeats + 1) % patternLength;
+  // used for decorating buttons
+  const currentQuarterBeat = (elapsedQuarterBeats) % patternLength;
 
   const bpm = bpmDoc?.bpm || 120;
   const playing = bpmDoc?.playing || false;
@@ -24,15 +25,15 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
     const secondsPerQuarterBeat_s = 15 / bpm;
     const scheduledEvents = [];
 
-    let nextBeatNumber = (startBeatNumber + 1) % patternLength;
+    let nextBeatNumber = (startBeatNumber) % patternLength;
     for (let i = 0; i < quarterBeatsToSchedule; i++) {
       if (beats[`beat-${instrument.toLowerCase()}-${nextBeatNumber}`]) {
         const beatTime_ms = nextQuarterBeatStart_ms + (i * secondsPerQuarterBeat_s * 1000);
         const audioTime_s = scheduleStart_s + (beatTime_ms - nextQuarterBeatStart_ms) / 1000;
         
-        // if (instrument === "Kick") {
-        //   console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
-        // }
+        if (instrument === "Kick") {
+          console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
+        }
         const event = scheduleBeat(soundBuffer, audioTime_s);
         scheduledEvents.push(event);
       }
@@ -55,9 +56,9 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
     // Calculate the next quarter beat start time
     const nextQuarterBeatNumber = Math.ceil(elapsedTimesyncTime_ms / quarterBeatDuration_ms);
     const nextQuarterBeatStart_ms = nextQuarterBeatNumber * quarterBeatDuration_ms;
-    // if (instrument === "Kick") {
-    //   console.log("beat number: ", nextQuarterBeatNumber, " start ms: ", nextQuarterBeatStart_ms);
-    // }
+    if (instrument === "Kick") {
+      console.log("beat number: ", nextQuarterBeatNumber, " start ms: ", nextQuarterBeatStart_ms);
+    }
 
     // Calculate when this beat should play in audio context time
     const audioTimeToSchedule_s = audioContextStartTime_s.current + (nextQuarterBeatStart_ms / 1000);
