@@ -1,34 +1,16 @@
 .top-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center; /* Center the controls horizontally */
-  width: 100%; /* Ensure the container takes full width */
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px;
 }
 
-.control-button {
-  margin-right: 10px;
-  height: 40px; /* Ensure buttons have the same height */
-}
-
-.control-button:hover {
-  background-color: #1565c0;
-}
-
-.control-button.nuke {
-  background-color: red;
-  color: white;
-}
-
-.control-button.nuke:hover {
-  background-color: #c62828;
-}
-
-.control-button.resync {
-  background-color: #388e3c;
-}
-
-.control-button.resync:hover {
-  background-color: #2e7d32;
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .bpm-control {
@@ -37,17 +19,17 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 5px 10px;
-  margin-right: 10px;
-  height: 40px; /* Adjust to match the height of other controls */
+  width: 100%;
 }
 
 .bpm-control label {
   margin-right: 10px;
+  white-space: nowrap;
 }
 
 .bpm-slider {
-  width: 150px; /* Adjust width as needed */
-  margin-right: 10px;
+  flex-grow: 1;
+  margin: 0 10px;
 }
 
 .bpm-value {
@@ -55,7 +37,47 @@
   text-align: center;
 }
 
-.bpm-input {
-  width: 60px;
-  text-align: center;
+.control-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.play-pause-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.play-pause-button:hover {
+  background-color: #45a049;
+}
+
+.clear-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.clear-button:hover {
+  background-color: #d32f2f;
+}
+
+@media (min-width: 768px) {
+  .top-controls {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  .button-group {
+    margin-bottom: 0;
+    margin-right: 20px;
+  }
+
+  .bpm-control {
+    width: auto;
+    flex-grow: 1;
+    max-width: 400px;
+  }
 }

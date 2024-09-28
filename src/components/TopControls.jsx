@@ -92,9 +92,12 @@ const TopControls = () => {
 
   return (
     <div className="top-controls">
-      <button className="play-pause-button" onClick={togglePlay}>
-        {playing ? 'Pause' : 'Play'}
-      </button>
+      <div className="button-group">
+        <button className="control-button play-pause-button" onClick={togglePlay}>
+          {playing ? 'Pause' : 'Play'}
+        </button>
+        <button className="control-button clear-button" onClick={handleClear}>Clear</button>
+      </div>
       <div className="bpm-control">
         <label htmlFor="bpm-slider">BPM</label>
         <input
@@ -110,8 +113,6 @@ const TopControls = () => {
         />
         <span className="bpm-value">{tempBpm}</span>
       </div>
-      <button className="control-button" onClick={handleClear}>Clear</button>
-      {/* Remove the Nuke button */}
     </div>
   );
 };
