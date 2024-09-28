@@ -62,7 +62,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, 
 
     // Only schedule if it's in the future
     if (audioTimeToSchedule_s > currentAudioTime_s) {
-      clearScheduledEvents(scheduledEventsRef.current);
+      //clearScheduledEvents(scheduledEventsRef.current);
       scheduledEventsRef.current = scheduleBeats(
         instrument,
         soundBuffer,

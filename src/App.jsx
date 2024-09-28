@@ -34,7 +34,6 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  //const { database } = useFireproof("fireproof", {public: true});
   const { database, useLiveQuery } = useFireproof("drum-machine");
   //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
   const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev";
