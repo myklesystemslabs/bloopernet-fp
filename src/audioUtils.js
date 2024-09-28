@@ -38,7 +38,7 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
     console.log("scheduled beat ", audioTime_s - ctxtime, " seconds from now");
     return event;
   } else {
-    console.log("too late to schedule beat");
+    console.warn("too late to schedule beat");
   }
 };
 
