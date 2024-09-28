@@ -90,11 +90,11 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
 
   useEffect(() => {
     if (playing && !wasPlaying) {
-      console.log("playing: ", playing);
+      console.log("play started");
       setWasPlaying(true);
       // Reset timing references when playback starts
       audioContextStartTime_s.current = getAudioContext().currentTime;
-      timesyncStartTime_ms.current = ts.now();
+      timesyncStartTime_ms.current = bpmDoc?.lastChanged_ms || ts.now();
       // console.log("audioContextStartTime secs: ", audioContextStartTime_s.current);
       // console.log("timesyncStartTime secs: ", timesyncStartTime_ms.current / 1000);
       // console.log("start times skew: ", ( ((audioContextStartTime_s.current *1000) - (timesyncStartTime_ms.current ) ) / 1000));
