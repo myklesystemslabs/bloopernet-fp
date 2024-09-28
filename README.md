@@ -1,8 +1,7 @@
-# React + Vite
+# Loopernet demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Work very much in progress. Known issues:
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* Sound is not in sync with the highligted playing position.  WIP.
+* Sometimes you press play and hear nothing. Sound scheduling issues related to the above. Try stopping and starting again.
+* Browsers often don't let you hear sound until you've made sound with a gesture. If you connect and the pattern is already playing, try tapping one of the instrument buttons on the left.
