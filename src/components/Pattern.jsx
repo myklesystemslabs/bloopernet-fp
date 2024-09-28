@@ -10,7 +10,6 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
   const ts = useTimesync();
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
-  const audioContextStartTime_s = useRef(null);
   const timesyncStartTime_ms = useRef(null);
 
   // used for decorating buttons
@@ -31,9 +30,9 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
         const beatTime_ms = nextQuarterBeatStart_ms + (i * secondsPerQuarterBeat_s * 1000);
         const audioTime_s = scheduleStart_s + (beatTime_ms - nextQuarterBeatStart_ms) / 1000;
         
-        if (instrument === "Kick") {
-          console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
-        }
+        // if (instrument === "Kick") {
+        //   console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
+        // }
         const event = scheduleBeat(soundBuffer, audioTime_s);
         scheduledEvents.push(event);
       }
@@ -44,7 +43,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
   }, [instrument, soundBuffer, beats, bpm, playing]);
 
   const scheduleNextQuarterBeat = useCallback(() => {
-    if (!soundBuffer || !playing || !ts || audioContextStartTime_s.current === null || timesyncStartTime_ms.current === null) return;
+    if (!soundBuffer || !playing || !ts || timesyncStartTime_ms.current === null) return;
 
     const currentTimesyncTime_ms = ts.now();
     const elapsedTimesyncTime_ms = currentTimesyncTime_ms - timesyncStartTime_ms.current;
@@ -56,12 +55,17 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
     // Calculate the next quarter beat start time
     const nextQuarterBeatNumber = Math.ceil(elapsedTimesyncTime_ms / quarterBeatDuration_ms);
     const nextQuarterBeatStart_ms = nextQuarterBeatNumber * quarterBeatDuration_ms;
-    if (instrument === "Kick") {
-      console.log("beat number: ", nextQuarterBeatNumber, " start ms: ", nextQuarterBeatStart_ms);
-    }
 
-    // Calculate when this beat should play in audio context time
-    const audioTimeToSchedule_s = audioContextStartTime_s.current + (nextQuarterBeatStart_ms / 1000);
+    // relative time to schedule
+    const relativeTimeToSchedule_ms = nextQuarterBeatStart_ms - elapsedTimesyncTime_ms;
+    const audioTimeToSchedule_s = currentAudioTime_s + (relativeTimeToSchedule_ms / 1000);
+
+    // if (instrument === "Kick") {
+    //   console.log("beat number: ", nextQuarterBeatNumber, " start ms: ", nextQuarterBeatStart_ms);
+    //   // console.log("syncDelta_ms: ", syncDelta_ms);
+    //   console.log("audioTimeToSchedule_s: ", audioTimeToSchedule_s);
+    //   console.log("relativeTimeToSchedule_ms: ", relativeTimeToSchedule_ms);
+    // }
 
     // Only schedule if it's in the future
     if (audioTimeToSchedule_s > currentAudioTime_s) {
@@ -73,7 +77,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
         nextQuarterBeatNumber
       );
     } else {
-      console.log("too late to schedule by ", (audioTimeToSchedule_s - currentAudioTime_s), " seconds");
+      console.warn("too late to schedule by ", (audioTimeToSchedule_s - currentAudioTime_s), " seconds");
     }
 
   }, [instrument, soundBuffer, beats, bpm, playing, ts]);
@@ -98,10 +102,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       timesyncStartTime_ms.current = bpmDoc?.lastChanged_ms || ts.now();
       // time between when play started and when we rendered
       const delta_s = (ts.now() - (bpmDoc?.lastChanged_ms || 0)) / 1000;
-      audioContextStartTime_s.current = getAudioContext().currentTime - delta_s;
-      // console.log("audioContextStartTime secs: ", audioContextStartTime_s.current);
       // console.log("timesyncStartTime secs: ", timesyncStartTime_ms.current / 1000);
-      // console.log("start times skew: ", ( ((audioContextStartTime_s.current *1000) - (timesyncStartTime_ms.current ) ) / 1000));
 
       // Play the first beat immediately
       if (soundBuffer && beats[`beat-${instrument.toLowerCase()}-0`]) {
@@ -111,7 +112,6 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       // Schedule the next beat
       scheduleNextQuarterBeat();
     } else if (!playing && wasPlaying) {
-      audioContextStartTime_s.current = null;
       timesyncStartTime_ms.current = null;
       // Clear any scheduled events when stopping
       clearScheduledEvents(scheduledEventsRef.current);
@@ -134,7 +134,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
     if (soundBuffer) {
       playSoundBuffer(soundBuffer);
     } else {
-      console.log(`Sound for ${instrument} not loaded yet`);
+      console.warn(`Sound for ${instrument} not loaded yet`);
     }
   };
 
