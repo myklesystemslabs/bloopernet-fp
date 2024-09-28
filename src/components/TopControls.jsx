@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
+import { setMasterVolume } from '../audioUtils';
 import './TopControls.css';
 
 const TopControls = () => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true); // Start muted
   const timeoutRef = useRef(null);
   const { database, useLiveQuery } = useFireproof("drum-machine");
   // Fetch the current BPM document from the database
@@ -19,6 +21,11 @@ const TopControls = () => {
       setPlaying(bpmDoc.playing);
     }
   }, [bpmDoc]);
+
+  useEffect(() => {
+    // Set initial volume
+    setMasterVolume(muted ? 0 : 1);
+  }, [muted]);
 
   const handleClear = async () => {
     try {
@@ -90,6 +97,12 @@ const TopControls = () => {
     });
   };
 
+  const toggleMute = () => {
+    const newMutedState = !muted;
+    setMuted(newMutedState);
+    setMasterVolume(newMutedState ? 0 : 1);
+  };
+
   return (
     <div className="top-controls">
       <div className="button-group">
@@ -97,6 +110,9 @@ const TopControls = () => {
           {playing ? 'Pause' : 'Play'}
         </button>
         <button className="control-button clear-button" onClick={handleClear}>Clear</button>
+        <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
+          {muted ? 'Unmute' : 'Mute'}
+        </button>
       </div>
       <div className="bpm-control">
         <label htmlFor="bpm-slider">BPM</label>

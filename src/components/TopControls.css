@@ -64,6 +64,23 @@
   background-color: #d32f2f;
 }
 
+.mute-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.mute-button:hover {
+  background-color: #1976D2;
+}
+
+.mute-button.muted {
+  background-color: #9E9E9E;
+}
+
+.mute-button.muted:hover {
+  background-color: #757575;
+}
+
 @media (min-width: 768px) {
   .top-controls {
     flex-wrap: nowrap;
@@ -73,6 +90,7 @@
   .button-group {
     margin-bottom: 0;
     margin-right: 20px;
+    flex-shrink: 0;
   }
 
   .bpm-control {
