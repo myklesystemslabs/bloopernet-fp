@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
-import { loadSound, scheduleBeats, clearScheduledEvents, playSoundBuffer, getAudioContext } from '../audioUtils';
+import { loadSound, clearScheduledEvents, playSoundBuffer, getAudioContext, scheduleBeat } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
@@ -13,6 +13,30 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, 
   const timesyncStartTime_ms = useRef(null);
 
   const currentQuarterBeat = elapsedQuarterBeats % patternLength;
+
+  const scheduleBeats = useCallback((nextQuarterBeatStart_ms, scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
+    if (!soundBuffer || !playing) return [];
+
+    const secondsPerQuarterBeat_s = 15 / bpm;
+    const scheduledEvents = [];
+
+    let nextBeatNumber = (startBeatNumber + 1) % patternLength;
+    for (let i = 0; i < quarterBeatsToSchedule; i++) {
+      if (beats[`beat-${instrument.toLowerCase()}-${nextBeatNumber}`]) {
+        const beatTime_ms = nextQuarterBeatStart_ms + (i * secondsPerQuarterBeat_s * 1000);
+        const audioTime_s = scheduleStart_s + (beatTime_ms - nextQuarterBeatStart_ms) / 1000;
+        
+        if (instrument === "Kick") {
+          console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
+        }
+        const event = scheduleBeat(soundBuffer, audioTime_s);
+        scheduledEvents.push(event);
+      }
+      nextBeatNumber = (nextBeatNumber + 1) % patternLength;
+    }
+
+    return scheduledEvents;
+  }, [instrument, soundBuffer, beats, bpm, playing]);
 
   const scheduleNextQuarterBeat = useCallback(() => {
     if (!soundBuffer || !playing || !ts || audioContextStartTime_s.current === null || timesyncStartTime_ms.current === null) return;
@@ -38,15 +62,10 @@ const Pattern = ({ instrument, beats, updateBeat, bpm, lastChanged_ms, playing, 
     if (audioTimeToSchedule_s > currentAudioTime_s) {
       //clearScheduledEvents(scheduledEventsRef.current);
       scheduledEventsRef.current = scheduleBeats(
-        instrument,
-        soundBuffer,
-        beats,
-        bpm,
-        playing,
         timesyncStartTime_ms.current + nextQuarterBeatStart_ms,
         audioTimeToSchedule_s,
-        1, // Schedule 1 quarter beat ahead
-        nextQuarterBeatNumber // start scheduling from this beat number
+        1,
+        nextQuarterBeatNumber
       );
     }
 

@@ -26,39 +26,20 @@ export const playSoundBuffer = (buffer) => {
   source.start();
 };
 
-export const scheduleBeats = (instrument, soundBuffer, beats, bpm, playing, nextQuarterBeatStart_ms, scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
-  if (!clock || !soundBuffer || !playing) return [];
-
-  const secondsPerQuarterBeat_s = 15 / bpm;
-  const scheduledEvents = [];
-
-  let nextBeatNumber = (startBeatNumber + 1) % 16;
-  for (let i = 0; i < quarterBeatsToSchedule; i++) {
-    if (beats[`beat-${instrument.toLowerCase()}-${nextBeatNumber}`]) {
-      const beatTime_ms = nextQuarterBeatStart_ms + (i * secondsPerQuarterBeat_s * 1000);
-      const audioTime_s = scheduleStart_s + (beatTime_ms - nextQuarterBeatStart_ms) / 1000;
-      
-      if (instrument === "Kick") {
-        console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
-      }
-      const event = scheduleBeat(soundBuffer, audioTime_s);
-      scheduledEvents.push(event);
-    }
-    nextBeatNumber = (nextBeatNumber + 1) % 16;
-
-  }
-
-  return scheduledEvents;
-};
-
 export const scheduleBeat = (soundBuffer, audioTime_s) => {
-  const event = clock.callbackAtTime(() => {
-    const source = getAudioContext().createBufferSource();
-    source.buffer = soundBuffer;
-    source.connect(getAudioContext().destination);
-    source.start();
-  }, audioTime_s);
-  return event;
+  let ctxtime = getAudioContext().currentTime;
+  if (audioTime_s > ctxtime) {
+    const event = clock.callbackAtTime(() => {
+      const source = getAudioContext().createBufferSource();
+      source.buffer = soundBuffer;
+      source.connect(getAudioContext().destination);
+      source.start();
+    }, audioTime_s);
+    console.log("scheduled beat ", audioTime_s - ctxtime, " seconds from now");
+    return event;
+  } else {
+    console.log("too late to schedule beat");
+  }
 };
 
 export const clearScheduledEvents = (events) => {
