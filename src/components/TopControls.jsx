@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
-import { setMasterVolume } from '../audioUtils';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
 import './TopControls.css';
 
 const TopControls = () => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(true); // Start muted
+  const [muted, setMuted] = useState(isMasterMuted()); // Start muted
   const timeoutRef = useRef(null);
   const { database, useLiveQuery } = useFireproof("drum-machine");
   // Fetch the current BPM document from the database
@@ -24,8 +24,13 @@ const TopControls = () => {
 
   useEffect(() => {
     // Set initial volume
-    setMasterVolume(muted ? 0 : 1);
+    setMasterMute(muted);
   }, [muted]);
+
+  useEffect(() => {
+    // Load the silence buffer when the component mounts
+    loadSilenceBuffer();
+  }, []);
 
   const handleClear = async () => {
     try {
@@ -97,10 +102,10 @@ const TopControls = () => {
     });
   };
 
-  const toggleMute = () => {
+  const toggleMute = async () => {
     const newMutedState = !muted;
+    await setMasterMute(newMutedState);
     setMuted(newMutedState);
-    setMasterVolume(newMutedState ? 0 : 1);
   };
 
   return (
