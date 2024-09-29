@@ -7,7 +7,7 @@ import './PatternSet.css';
 const PatternSet = ({ instruments, beats, updateBeat}) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
-  const { useLiveQuery } = useFireproof("drum-machine");
+  const { useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME);
    // Fetch the BPM document from the database
    const bpmResult = useLiveQuery('type', { key: 'bpm' });
    const bpmDoc = bpmResult.rows[0]?.doc;

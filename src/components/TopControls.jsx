@@ -10,7 +10,7 @@ const TopControls = () => {
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(isMasterMuted()); // Start muted
   const timeoutRef = useRef(null);
-  const { database, useLiveQuery } = useFireproof("drum-machine");
+  const { database, useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME);
   // Fetch the current BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
