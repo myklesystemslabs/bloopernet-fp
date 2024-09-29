@@ -5,6 +5,7 @@ let clock = null;
 let masterGainNode = null;
 let silenceBuffer = null;
 let isMuted = true;
+let latencyCompensation = 0;
 
 export const getAudioContext = () => {
   if (!audioContext) {
@@ -71,16 +72,32 @@ export const playSoundBuffer = (buffer) => {
   source.start();
 };
 
+export const setLatencyCompensation = (latency) => {
+  latencyCompensation = latency;
+  localStorage.setItem('latencyCompensation', latency);
+};
+
+export const getLatencyCompensation = () => {
+  return latencyCompensation;
+};
+
+export const initLatencyCompensation = () => {
+  const storedLatency = localStorage.getItem('latencyCompensation');
+  latencyCompensation = storedLatency ? parseFloat(storedLatency) : 0;
+};
+
 export const scheduleBeat = (soundBuffer, audioTime_s) => {
   let ctxtime = getAudioContext().currentTime;
-  if (audioTime_s > ctxtime) {
+  const adjustedTime = audioTime_s + (latencyCompensation / 1000);
+  
+  if (adjustedTime > ctxtime) {
     const event = clock.callbackAtTime(() => {
       const source = getAudioContext().createBufferSource();
       source.buffer = soundBuffer;
       source.connect(masterGainNode);
       source.start();
-    }, audioTime_s);
-    console.log("scheduled beat ", audioTime_s - ctxtime, " seconds from now");
+    }, adjustedTime);
+    console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
     return event;
   } else {
     console.warn("too late to schedule beat");
