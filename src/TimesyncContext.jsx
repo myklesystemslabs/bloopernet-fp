@@ -11,16 +11,26 @@ export const TimesyncProvider = ({ children, partyKitHost }) => {
 
   useEffect(() => {
     const connectToTimesync = async () => {
+      console.log("connecting to timesync");
       const timesyncURL = `https://${partyKitHost}/parties/partytime/w00t`;
       const tsInstance = timesync.create({
         server: timesyncURL,
         timeout: 1000,
+        interval: 10000,
       });
+      tsInstance.sync();
+
+      tsInstance.on('sync', (state) => {
+        console.log("timesync sync ", state);
+      });
+
       setTs(tsInstance);
     };
 
-    connectToTimesync();
-  }, [partyKitHost]);
+    if (!ts) {
+      connectToTimesync();
+    }
+  }, [partyKitHost, ts]);
 
   return (
     <TimesyncContext.Provider value={ts}>
