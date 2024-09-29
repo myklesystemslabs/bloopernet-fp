@@ -43,9 +43,7 @@ const PatternSet = ({ instruments, beats, updateBeat}) => {
           instrument={instrument}
           beats={beats}
           updateBeat={updateBeat}
-          bpm={bpm}
-          lastChanged_ms={lastChanged_ms}
-          playing={playing}
+          bpmDoc={bpmDoc}
           elapsedQuarterBeats={elapsedQuarterBeats}
         />
       ))}

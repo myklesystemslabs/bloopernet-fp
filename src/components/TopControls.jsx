@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
 import './TopControls.css';
 
 const TopControls = () => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(isMasterMuted()); // Start muted
   const timeoutRef = useRef(null);
   const { database, useLiveQuery } = useFireproof("drum-machine");
   // Fetch the current BPM document from the database
@@ -19,6 +21,16 @@ const TopControls = () => {
       setPlaying(bpmDoc.playing);
     }
   }, [bpmDoc]);
+
+  useEffect(() => {
+    // Set initial volume
+    setMasterMute(muted);
+  }, [muted]);
+
+  useEffect(() => {
+    // Load the silence buffer when the component mounts
+    loadSilenceBuffer();
+  }, []);
 
   const handleClear = async () => {
     try {
@@ -45,7 +57,7 @@ const TopControls = () => {
     const newBpmDoc = {
       ...bpmDoc,
       ...updates,
-      lastChanged: timestamp
+      lastChanged_ms: timestamp
     };
 
     try {
@@ -90,11 +102,23 @@ const TopControls = () => {
     });
   };
 
+  const toggleMute = async () => {
+    const newMutedState = !muted;
+    await setMasterMute(newMutedState);
+    setMuted(newMutedState);
+  };
+
   return (
     <div className="top-controls">
-      <button className="play-pause-button" onClick={togglePlay}>
-        {playing ? 'Pause' : 'Play'}
-      </button>
+      <div className="button-group">
+        <button className="control-button play-pause-button" onClick={togglePlay}>
+          {playing ? 'Pause' : 'Play'}
+        </button>
+        <button className="control-button clear-button" onClick={handleClear}>Clear</button>
+        <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
+          {muted ? 'Unmute' : 'Mute'}
+        </button>
+      </div>
       <div className="bpm-control">
         <label htmlFor="bpm-slider">BPM</label>
         <input
@@ -110,8 +134,6 @@ const TopControls = () => {
         />
         <span className="bpm-value">{tempBpm}</span>
       </div>
-      <button className="control-button" onClick={handleClear}>Clear</button>
-      {/* Remove the Nuke button */}
     </div>
   );
 };

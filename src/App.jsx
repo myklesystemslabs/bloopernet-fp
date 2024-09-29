@@ -15,8 +15,8 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
     return partyCxs.get(name)
   }
   const s3conf = { // example values, replace with your own by deploying https://github.com/fireproof-storage/valid-cid-s3-bucket
-    upload: 'https://04rvvth2b4.execute-api.us-east-2.amazonaws.com/uploads',
-    download: 'https://sam-app-s3uploadbucket-e6rv1dj2kydh.s3.us-east-2.amazonaws.com'
+    upload: import.meta.env.VITE_S3PARTYUP,
+    download: import.meta.env.VITE_S3PARTYDOWN
   }
   const s3conn = new ConnectS3(s3conf.upload, s3conf.download, '')
   s3conn.connectStorage(blockstore)
@@ -34,13 +34,16 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  //const { database } = useFireproof("fireproof", {public: true});
   const { database, useLiveQuery } = useFireproof("drum-machine");
-  //const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
-  const partyKitHost = "https://cursor-drum-test-party.myklemykle.partykit.dev";
 
-  const connection = partykitS3(database, partyKitHost);
-  console.log("Connection", connection);
+  const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
+
+  if (partyKitHost ) {
+    const connection = partykitS3(database, partyKitHost );
+    console.log("Connection", connection);
+  } else {
+    console.warn("No connection");
+  }
 
 
   let beats = {};
