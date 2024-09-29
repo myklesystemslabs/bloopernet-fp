@@ -34,7 +34,7 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  const { database, useLiveQuery } = useFireproof("drum-machine");
+  const { database, useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME);
 
   const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
@@ -80,7 +80,7 @@ function App() {
       _id: 'bpm',
       type: 'bpm',
       bpm: bpm,
-      lastChanged: timestamp
+      lastChanged_ms: timestamp
     };
 
     try {

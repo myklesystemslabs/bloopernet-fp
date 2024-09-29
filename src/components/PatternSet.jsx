@@ -14,7 +14,7 @@ const PatternSet = ({ instruments, beats, updateBeat}) => {
    
    // Extract BPM, lastChanged, and playing from the query result
    const bpm = bpmDoc?.bpm || 120;
-   const lastChanged_ms = bpmDoc?.lastChanged || (ts ? ts.now() : Date.now()); // Use timesync for default value if available
+   const lastChanged_ms = bpmDoc?.lastChanged_ms || (ts ? ts.now() : Date.now()); // Use timesync for default value if available
    const playing = bpmDoc?.playing || false;
 
   const calculateElapsedQuarterBeats = useCallback(() => {
