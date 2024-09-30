@@ -5,7 +5,9 @@ import { ConnectPartyKit } from '@fireproof/partykit'
 
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
+import LatencySlider from './components/LatencySlider';
 import { TimesyncProvider } from './TimesyncContext';
+import { initLatencyCompensation } from './audioUtils';
 import './App.css';
 
 const partyCxs = new Map();
@@ -34,17 +36,20 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  const { database, useLiveQuery } = useFireproof("drum-machine");
+  const { database, useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME || 'drum-machine');
 
   const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
-  if (partyKitHost ) {
-    const connection = partykitS3(database, partyKitHost );
+  useEffect(() => {
+    initLatencyCompensation();
+  }, []);
+
+  if (partyKitHost) {
+    const connection = partykitS3(database, partyKitHost);
     console.log("Connection", connection);
   } else {
     console.warn("No connection");
   }
-
 
   let beats = {};
   const result = useLiveQuery('type', { key: 'beat' });
@@ -80,7 +85,7 @@ function App() {
       _id: 'bpm',
       type: 'bpm',
       bpm: bpm,
-      lastChanged: timestamp
+      lastChanged_ms: timestamp
     };
 
     try {
@@ -97,6 +102,7 @@ function App() {
         <h1 className="app-title">Loopernet Demo</h1>
         <TopControls updateBPM={updateBPM} />
         <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
+        <LatencySlider />
       </div>
     </TimesyncProvider>
   );

@@ -2,8 +2,6 @@
 
 Work very much in progress. Known issues:
 
-* Sound is not in sync with the highligted playing position.  WIP.
-* Occasionally a beat is dropped. WIP.
-* Sometimes you press play and hear nothing. Sound scheduling issues related to the above. WIP. Try stopping and starting again.
-* Browsers often don't let you hear sound until you've made sound with a gesture. If you connect and the pattern is already playing, try tapping one of the instrument buttons on the left.
+* On initial unmute, if already playing, there can be an audio glitch. WIP.
+* I still see sound get out of sync after reload on iOS; closing the window completely & reopening seems to fix it. Hmmm.
 * Time stutters when BPM is changed. WIP.
