@@ -101,7 +101,6 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
-        <h1 className="app-title">Loopernet Demo</h1>
         <TopControls dbName={dbName}  />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} updateBeat={updateBeat} />
         <LatencySlider />
