@@ -36,7 +36,9 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  const { database, useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME || 'drum-machine');
+  const currentHour = new Date().toISOString().slice(0, 13)
+  const dbName = (import.meta.env.VITE_DBNAME || 'drum-machine') + '-' + currentHour;
+  const { database, useLiveQuery } = useFireproof(dbName);
 
   const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
@@ -100,8 +102,8 @@ function App() {
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
         <h1 className="app-title">Loopernet Demo</h1>
-        <TopControls updateBPM={updateBPM} />
-        <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
+        <TopControls dbName={dbName}  />
+        <PatternSet dbName={dbName} instruments={instruments} beats={beats} updateBeat={updateBeat} />
         <LatencySlider />
       </div>
     </TimesyncProvider>
