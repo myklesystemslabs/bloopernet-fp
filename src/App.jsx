@@ -40,6 +40,33 @@ function App() {
   const dbName = (import.meta.env.VITE_DBNAME || 'drum-machine') + '-' + currentHour;
   const { database, useLiveQuery } = useFireproof(dbName);
 
+  const [isExpert, setIsExpert] = useState(false);
+
+  const toggleExpert = () => {
+    setIsExpert(!isExpert);
+  };
+
+  const handleLongPress = (callback, duration = 500) => {
+    let timer;
+    const start = () => {
+      timer = setTimeout(callback, duration);
+    };
+    const clear = () => {
+      clearTimeout(timer);
+    };
+
+    return {
+      onTouchStart: start,
+      onTouchEnd: clear,
+      onTouchMove: clear,
+      onMouseDown: start,
+      onMouseUp: clear,
+      onMouseLeave: clear
+    };
+  };
+
+  const longPressHandlers = handleLongPress(toggleExpert);
+
   const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
   useEffect(() => {
@@ -101,7 +128,8 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
-        <TopControls dbName={dbName}  />
+        <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
+        <TopControls dbName={dbName} isExpert={isExpert}  />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} updateBeat={updateBeat} />
         <LatencySlider />
       </div>

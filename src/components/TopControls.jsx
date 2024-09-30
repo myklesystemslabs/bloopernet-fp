@@ -4,7 +4,7 @@ import { useFireproof } from 'use-fireproof';
 import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
 import './TopControls.css';
 
-const TopControls = ({ dbName }) => {
+const TopControls = ({ dbName, isExpert }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
@@ -15,32 +15,7 @@ const TopControls = ({ dbName }) => {
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
 
-  const [isExpert, setIsExpert] = useState(false);
-
-  const toggleExpert = () => {
-    setIsExpert(!isExpert);
-  };
-
-  const handleLongPress = (callback, duration = 500) => {
-    let timer;
-    const start = () => {
-      timer = setTimeout(callback, duration);
-    };
-    const clear = () => {
-      clearTimeout(timer);
-    };
-
-    return {
-      onTouchStart: start,
-      onTouchEnd: clear,
-      onTouchMove: clear,
-      onMouseDown: start,
-      onMouseUp: clear,
-      onMouseLeave: clear
-    };
-  };
-
-  const longPressHandlers = handleLongPress(toggleExpert);
+  
 
   useEffect(() => {
     if (bpmDoc) {
@@ -136,36 +111,39 @@ const TopControls = ({ dbName }) => {
   };
 
   return (
-    <>
-    <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
+    
+    
     <div className="top-controls">
       <div className="button-group">
-        {isExpert && (
-          <button className="control-button play-pause-button" onClick={togglePlay}>
-            {playing ? 'Pause' : 'Play'}
-          </button>
-        )}
-        <button className="control-button clear-button" onClick={handleClear}>Clear</button>
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
           {muted ? 'Unmute' : 'Mute'}
         </button>
+        {isExpert && (
+          <>
+            <button className="control-button play-pause-button" onClick={togglePlay}>
+              {playing ? 'Pause' : 'Play'}
+            </button>
+            <button className="control-button clear-button" onClick={handleClear}>Clear</button>
+            <div className="bpm-control">
+              <label htmlFor="bpm-slider">BPM</label>
+              <input
+                id="bpm-slider"
+                type="range"
+                className="bpm-slider"
+                value={tempBpm}
+                onChange={handleBpmChange}
+                onMouseUp={handleBpmChangeComplete}
+                onTouchEnd={handleBpmChangeComplete}
+                min="30"
+                max="240"
+              />
+              <span className="bpm-value">{tempBpm}</span>
+            </div>
+          </>
+        )}
       </div>
-      <div className="bpm-control">
-        <label htmlFor="bpm-slider">BPM</label>
-        <input
-          id="bpm-slider"
-          type="range"
-          className="bpm-slider"
-          value={tempBpm}
-          onChange={handleBpmChange}
-          onMouseUp={handleBpmChangeComplete}
-          onTouchEnd={handleBpmChangeComplete}
-          min="30"
-          max="240"
-        />
-        <span className="bpm-value">{tempBpm}</span>
-      </div>
-    </div></>
+    </div>
+    
   );
 };
 
