@@ -104,6 +104,18 @@ const TopControls = ({ dbName, isExpert }) => {
     });
   };
 
+  useEffect(() => {
+    if (!ts) return;
+    const timer = setTimeout(() => {
+      if (!playing) {
+        togglePlay();
+      }
+    }, Math.floor(Math.random() * 4000) + 1000);
+
+    return () => clearTimeout(timer);
+  }, [ts]);
+
+
   const toggleMute = async () => {
     const newMutedState = !muted;
     await setMasterMute(newMutedState);
