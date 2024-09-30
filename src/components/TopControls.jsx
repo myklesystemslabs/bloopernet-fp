@@ -111,8 +111,6 @@ const TopControls = ({ dbName, isExpert }) => {
   };
 
   return (
-    
-    
     <div className="top-controls">
       <div className="button-group">
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
@@ -143,7 +141,6 @@ const TopControls = ({ dbName, isExpert }) => {
         )}
       </div>
     </div>
-    
   );
 };
 

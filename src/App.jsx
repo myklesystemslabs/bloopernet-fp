@@ -103,35 +103,13 @@ function App() {
     await database.put({ ...doc, isActive });
   };
 
-  const updateBPM = async (bpm, ts) => {
-    if (!ts) {
-      console.error('Timesync object not initialized');
-      return;
-    }
-
-    const timestamp = ts.now();
-    const bpmDoc = {
-      _id: 'bpm',
-      type: 'bpm',
-      bpm: bpm,
-      lastChanged_ms: timestamp
-    };
-
-    try {
-      await database.put(bpmDoc);
-      console.log('BPM updated:', bpmDoc);
-    } catch (error) {
-      console.error('Error updating BPM:', error);
-    }
-  };
-
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
         <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
         <TopControls dbName={dbName} isExpert={isExpert}  />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} updateBeat={updateBeat} />
-        <LatencySlider />
+        {/* <LatencySlider /> */}
       </div>
     </TimesyncProvider>
   );
