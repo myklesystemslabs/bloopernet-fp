@@ -4,10 +4,10 @@ import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
 import './PatternSet.css';
 
-const PatternSet = ({ dbName, instruments, beats, updateBeat}) => {
+const PatternSet = ({ dbName, instruments, beats}) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
-  const { useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName);
    // Fetch the BPM document from the database
    const bpmResult = useLiveQuery('type', { key: 'bpm' });
    const bpmDoc = bpmResult.rows[0]?.doc;
@@ -34,6 +34,23 @@ const PatternSet = ({ dbName, instruments, beats, updateBeat}) => {
       setElapsedQuarterBeats(0);
     }
   }, [playing, calculateElapsedQuarterBeats]);
+
+  const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
+    const doc = await database.get(id).catch(error => {
+      if (error.message.includes('Not found')) {
+        return {
+          _id: id,
+          type: 'beat',
+          isActive: isActive,
+          instrumentName: instrumentName,
+          beatIndex: beatIndex
+        };
+      } else {
+        throw error;
+      }
+    })
+    await database.put({ ...doc, isActive });
+  };
 
   return (
     <div className="pattern-set">

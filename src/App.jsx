@@ -86,29 +86,12 @@ function App() {
     beats[row.doc._id] = row.doc.isActive;
   });
 
-  const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
-    const doc = await database.get(id).catch(error => {
-      if (error.message.includes('Not found')) {
-        return {
-          _id: id,
-          type: 'beat',
-          isActive: isActive,
-          instrumentName: instrumentName,
-          beatIndex: beatIndex
-        };
-      } else {
-        throw error;
-      }
-    })
-    await database.put({ ...doc, isActive });
-  };
-
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
         <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
         <TopControls dbName={dbName} isExpert={isExpert}  />
-        <PatternSet dbName={dbName} instruments={instruments} beats={beats} updateBeat={updateBeat} />
+        <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
         {/* <LatencySlider /> */}
       </div>
     </TimesyncProvider>
