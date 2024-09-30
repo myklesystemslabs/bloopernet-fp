@@ -90,7 +90,7 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
-        <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
+        <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
         <TopControls dbName={dbName} isExpert={isExpert}  />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
         {/* <LatencySlider /> */}
