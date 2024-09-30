@@ -36,7 +36,36 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  const { database, useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME || 'drum-machine');
+  const currentHour = new Date().toISOString().slice(0, 13)
+  const dbName = (import.meta.env.VITE_DBNAME || 'drum-machine') + '-' + currentHour;
+  const { database, useLiveQuery } = useFireproof(dbName);
+
+  const [isExpert, setIsExpert] = useState(false);
+
+  const toggleExpert = () => {
+    setIsExpert(!isExpert);
+  };
+
+  const handleLongPress = (callback, duration = 500) => {
+    let timer;
+    const start = () => {
+      timer = setTimeout(callback, duration);
+    };
+    const clear = () => {
+      clearTimeout(timer);
+    };
+
+    return {
+      onTouchStart: start,
+      onTouchEnd: clear,
+      onTouchMove: clear,
+      onMouseDown: start,
+      onMouseUp: clear,
+      onMouseLeave: clear
+    };
+  };
+
+  const longPressHandlers = handleLongPress(toggleExpert);
 
   const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
@@ -57,52 +86,13 @@ function App() {
     beats[row.doc._id] = row.doc.isActive;
   });
 
-  const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
-    const doc = await database.get(id).catch(error => {
-      if (error.message.includes('Not found')) {
-        return {
-          _id: id,
-          type: 'beat',
-          isActive: isActive,
-          instrumentName: instrumentName,
-          beatIndex: beatIndex
-        };
-      } else {
-        throw error;
-      }
-    })
-    await database.put({ ...doc, isActive });
-  };
-
-  const updateBPM = async (bpm, ts) => {
-    if (!ts) {
-      console.error('Timesync object not initialized');
-      return;
-    }
-
-    const timestamp = ts.now();
-    const bpmDoc = {
-      _id: 'bpm',
-      type: 'bpm',
-      bpm: bpm,
-      lastChanged_ms: timestamp
-    };
-
-    try {
-      await database.put(bpmDoc);
-      console.log('BPM updated:', bpmDoc);
-    } catch (error) {
-      console.error('Error updating BPM:', error);
-    }
-  };
-
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
-        <h1 className="app-title">Loopernet Demo</h1>
-        <TopControls updateBPM={updateBPM} />
-        <PatternSet instruments={instruments} beats={beats} updateBeat={updateBeat} />
-        <LatencySlider />
+        <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
+        <TopControls dbName={dbName} isExpert={isExpert}  />
+        <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
+        {/* <LatencySlider /> */}
       </div>
     </TimesyncProvider>
   );

@@ -4,16 +4,18 @@ import { useFireproof } from 'use-fireproof';
 import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
 import './TopControls.css';
 
-const TopControls = () => {
+const TopControls = ({ dbName, isExpert }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(isMasterMuted()); // Start muted
   const timeoutRef = useRef(null);
-  const { database, useLiveQuery } = useFireproof(import.meta.env.VITE_DBNAME || 'drum-machine');
+  const { database, useLiveQuery } = useFireproof(dbName);
   // Fetch the current BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
+
+  
 
   useEffect(() => {
     if (bpmDoc) {
@@ -111,28 +113,32 @@ const TopControls = () => {
   return (
     <div className="top-controls">
       <div className="button-group">
-        <button className="control-button play-pause-button" onClick={togglePlay}>
-          {playing ? 'Pause' : 'Play'}
-        </button>
-        <button className="control-button clear-button" onClick={handleClear}>Clear</button>
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
           {muted ? 'Unmute' : 'Mute'}
         </button>
-      </div>
-      <div className="bpm-control">
-        <label htmlFor="bpm-slider">BPM</label>
-        <input
-          id="bpm-slider"
-          type="range"
-          className="bpm-slider"
-          value={tempBpm}
-          onChange={handleBpmChange}
-          onMouseUp={handleBpmChangeComplete}
-          onTouchEnd={handleBpmChangeComplete}
-          min="30"
-          max="240"
-        />
-        <span className="bpm-value">{tempBpm}</span>
+        {isExpert && (
+          <>
+            <button className="control-button play-pause-button" onClick={togglePlay}>
+              {playing ? 'Pause' : 'Play'}
+            </button>
+            <button className="control-button clear-button" onClick={handleClear}>Clear</button>
+            <div className="bpm-control">
+              <label htmlFor="bpm-slider">BPM</label>
+              <input
+                id="bpm-slider"
+                type="range"
+                className="bpm-slider"
+                value={tempBpm}
+                onChange={handleBpmChange}
+                onMouseUp={handleBpmChangeComplete}
+                onTouchEnd={handleBpmChangeComplete}
+                min="30"
+                max="240"
+              />
+              <span className="bpm-value">{tempBpm}</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
