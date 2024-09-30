@@ -37,7 +37,7 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
   const firstPathSegment = document.location.pathname.split('/')[1];  
-  const dbName = (import.meta.env.VITE_DBNAME || 'drum-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
+  const dbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
   
   const { database, useLiveQuery } = useFireproof(dbName);
 
