@@ -18,9 +18,6 @@
   --button-text: #213547;
   --button-border: #ccc;
   --accent-color: #646cff;
-  --beat-active: #FF0000;
-  --beat-inactive: #8B4513;
-  --beat-current: #FFA500;
   --app-bg: #f0f0f0;
   --app-height: 100%;
 }
@@ -32,9 +29,6 @@
   --button-text: #ffffff;
   --button-border: #555555;
   --accent-color: #bb86fc;
-  --beat-active: #ff4081;
-  --beat-inactive: #4a4a4a;
-  --beat-current: #ffd700;
   --app-bg: #1a1a1a;
 }
 
