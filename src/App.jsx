@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import AudioVisualizer from './components/AudioVisualizer';
+import { getAnalyserNode } from './audioUtils';
 import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'
-
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
 import LatencySlider from './components/LatencySlider';
@@ -33,7 +34,6 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
   return connection
 }
 
-
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
   const currentHour = new Date().toISOString().slice(0, 13)
@@ -42,6 +42,8 @@ function App() {
 
   const [isExpert, setIsExpert] = useState(false);
   const [theme, setTheme] = useState('dark');
+  const [visualsEnabled, setVisualsEnabled] = useState(false);
+  const [analyserNode, setAnalyserNode] = useState(null);
 
   const toggleExpert = () => {
     setIsExpert(!isExpert);
@@ -106,13 +108,32 @@ function App() {
     return () => window.removeEventListener('resize', appHeight);
   }, []);
 
+  useEffect(() => {
+    // Get the analyserNode from audioUtils
+    const analyser = getAnalyserNode();
+    setAnalyserNode(analyser);
+  }, []);
+
+  const toggleVisuals = () => {
+    setVisualsEnabled(prev => !prev);
+  };
+
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
-      <div className={`app ${theme}`}>
-        <h1 className="app-title" {...longPressHandlers}>Bloopernet Live</h1>
-        <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
-        <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
-        {/* <LatencySlider /> */}
+      <div className="app">
+        <AudioVisualizer analyserNode={analyserNode} visualsEnabled={visualsEnabled} />
+        <div className="app-content">
+          <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
+          <TopControls 
+            dbName={dbName} 
+            isExpert={isExpert} 
+            toggleTheme={toggleTheme} 
+            theme={theme}
+            toggleVisuals={toggleVisuals}
+            visualsEnabled={visualsEnabled}
+          />
+          <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
+        </div>
       </div>
     </TimesyncProvider>
   );
