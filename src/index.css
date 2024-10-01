@@ -22,6 +22,7 @@
   --beat-inactive: #8B4513;
   --beat-current: #FFA500;
   --app-bg: #f0f0f0;
+  --app-height: 100%;
 }
 
 [data-theme="dark"] {
@@ -97,6 +98,8 @@ button:focus-visible {
 
 html, body, #root {
   height: 100%;
+  min-height: 100vh; /* fallback for older browsers */
+  min-height: var(--app-height);
   margin: 0;
   padding: 0;
   background-color: var(--app-bg);
@@ -105,23 +108,22 @@ html, body, #root {
 
 #root {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+  flex-direction: column;
+  min-height: 100vh; /* fallback for older browsers */
+  min-height: var(--app-height);
 }
 
 .app {
+  flex: 1;
   width: 100%;
-  max-width: 800px;  /* Adjust this value as needed */
-  padding: 20px;
-  box-sizing: border-box;
+  max-width: 800px;
+  margin: auto;
   background-color: var(--bg-color);
   color: var(--text-color);
-  /* Add padding and border-radius for a card-like effect */
   padding: 20px;
   border-radius: 8px;
-  /* Add a subtle shadow for depth */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .app-title {
@@ -145,4 +147,23 @@ body {
 button {
   font: inherit;
   color: inherit;
+}
+
+/* Styles for larger screens */
+@media (min-width: 768px) {
+  #root {
+    padding: 20px 0;
+    justify-content: center;
+  }
+
+  .app {
+    flex: 0 1 auto; /* Don't grow to full height on larger screens */
+  }
+}
+
+/* Styles for mobile screens */
+@media (max-width: 767px) {
+  .app {
+    border-radius: 0; /* Remove border radius on mobile for full-bleed effect */
+  }
 }
