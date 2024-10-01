@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
 import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
@@ -94,15 +94,16 @@ const TopControls = ({ dbName, isExpert }) => {
     updateBPMDoc({ bpm: tempBpm });
   };
 
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
+    if (!ts) return;
     const newPlayingState = !playing;
     setPlaying(newPlayingState);
     updateBPMDoc({ 
       playing: newPlayingState, 
-      bpm: tempBpm,
+      bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
       lastChanged_ms: ts.now() // Reset the start time when playing is toggled to true // todo: change to lastChanged_ms
     });
-  };
+  }, [playing, bpmDoc, tempBpm, ts]);
 
   useEffect(() => {
     if (!ts) return;
@@ -113,7 +114,7 @@ const TopControls = ({ dbName, isExpert }) => {
     }, Math.floor(Math.random() * 4000) + 1000);
 
     return () => clearTimeout(timer);
-  }, [ts]);
+  }, [ts, togglePlay]);
 
 
   const toggleMute = async () => {
