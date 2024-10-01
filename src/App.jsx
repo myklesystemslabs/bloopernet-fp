@@ -41,9 +41,14 @@ function App() {
   const { database, useLiveQuery } = useFireproof(dbName);
 
   const [isExpert, setIsExpert] = useState(false);
+  const [theme, setTheme] = useState('dark');
 
   const toggleExpert = () => {
     setIsExpert(!isExpert);
+  };
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
   const handleLongPress = (callback, duration = 500) => {
@@ -86,11 +91,15 @@ function App() {
     beats[row.doc._id] = row.doc.isActive;
   });
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
         <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
-        <TopControls dbName={dbName} isExpert={isExpert}  />
+        <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
         {/* <LatencySlider /> */}
       </div>

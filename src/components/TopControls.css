@@ -1,84 +1,54 @@
 .top-controls {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
   padding: 10px;
 }
 
 .button-group {
   display: flex;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+}
+
+.control-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.mute-button {
+  background-color: var(--accent-color);
+  color: var(--button-text);
+}
+
+.mute-button.muted {
+  background-color: #F44336;
+}
+
+.play-pause-button {
+  background-color: var(--accent-color);
+  color: var(--button-text);
+}
+
+.clear-button {
+  background-color: var(--accent-color);
+  color: var(--button-text);
 }
 
 .bpm-control {
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 5px 10px;
-  width: 100%;
-}
-
-.bpm-control label {
-  margin-right: 10px;
-  white-space: nowrap;
+  gap: 10px;
 }
 
 .bpm-slider {
-  flex-grow: 1;
-  margin: 0 10px;
+  width: 150px;
 }
 
 .bpm-value {
-  width: 40px;
+  min-width: 40px;
   text-align: center;
-}
-
-.control-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.play-pause-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.play-pause-button:hover {
-  background-color: #45a049;
-}
-
-.clear-button {
-  background-color: #f44336;
-  color: white;
-}
-
-.clear-button:hover {
-  background-color: #d32f2f;
-}
-
-.mute-button {
-  background-color: #2196F3;
-  color: white;
-}
-
-.mute-button:hover {
-  background-color: #1976D2;
-}
-
-.mute-button.muted {
-  background-color: #9E9E9E;
-}
-
-.mute-button.muted:hover {
-  background-color: #757575;
 }
 
 @media (min-width: 768px) {

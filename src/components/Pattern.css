@@ -1,3 +1,13 @@
+:root {
+  --beat-group-odd: #f0f0f0;
+  --beat-group-even: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  --beat-group-odd: #2a2a2a;
+  --beat-group-even: #222222;
+}
+
 .pattern {
   display: flex;
   align-items: center;
@@ -10,12 +20,13 @@
   min-width: 120px;
   margin-right: 20px;
   padding: 10px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
   border-radius: 4px;
   cursor: pointer;
   text-align: left;
   font-size: 16px;
+  color: var(--text-color);
 }
 
 .beat-buttons {
@@ -33,9 +44,9 @@
 }
 
 .beat-group:nth-child(odd) {
-  background-color: #f0f0f0; /* Light gray for odd groups */
+  background-color: var(--beat-group-odd);
 }
 
 .beat-group:nth-child(even) {
-  background-color: #e0e0e0; /* Slightly darker gray for even groups */
+  background-color: var(--beat-group-even);
 }

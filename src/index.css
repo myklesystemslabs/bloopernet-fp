@@ -11,6 +11,30 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --bg-color: #ffffff;
+  --text-color: #213547;
+  --button-bg: #f9f9f9;
+  --button-text: #213547;
+  --button-border: #ccc;
+  --accent-color: #646cff;
+  --beat-active: #FF0000;
+  --beat-inactive: #8B4513;
+  --beat-current: #FFA500;
+  --app-bg: #f0f0f0;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --button-bg: #333333;
+  --button-text: #ffffff;
+  --button-border: #555555;
+  --accent-color: #bb86fc;
+  --beat-active: #ff4081;
+  --beat-inactive: #4a4a4a;
+  --beat-current: #ffd700;
+  --app-bg: #1a1a1a;
 }
 
 a {
@@ -28,6 +52,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--app-bg);
+  color: var(--text-color);
 }
 
 h1 {
@@ -42,12 +68,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--button-border);
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--accent-color);
 }
 button:focus,
 button:focus-visible {
@@ -71,6 +99,8 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: var(--app-bg);
+  color: var(--text-color);
 }
 
 #root {
@@ -85,9 +115,34 @@ html, body, #root {
   max-width: 800px;  /* Adjust this value as needed */
   padding: 20px;
   box-sizing: border-box;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  /* Add padding and border-radius for a card-like effect */
+  padding: 20px;
+  border-radius: 8px;
+  /* Add a subtle shadow for depth */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .app-title {
   font-size: 2rem;
   margin-bottom: 20px;
+}
+
+/* Additional reset rules */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font: inherit;
+  color: inherit;
 }

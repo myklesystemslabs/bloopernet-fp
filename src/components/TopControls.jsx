@@ -4,7 +4,7 @@ import { useFireproof } from 'use-fireproof';
 import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
 import './TopControls.css';
 
-const TopControls = ({ dbName, isExpert }) => {
+const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
@@ -137,6 +137,9 @@ const TopControls = ({ dbName, isExpert }) => {
               />
               <span className="bpm-value">{tempBpm}</span>
             </div>
+            <button className="control-button theme-toggle" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
           </>
         )}
       </div>
