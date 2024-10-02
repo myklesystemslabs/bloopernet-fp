@@ -114,9 +114,18 @@ function App() {
         <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
         {/* <LatencySlider /> */}
+        <AppInfo />
       </div>
     </TimesyncProvider>
   );
 }
 
 export default App;
+
+const AppInfo = () => (
+  <footer>
+    <p>
+      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
+    </p>
+  </footer>
+);

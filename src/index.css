@@ -34,11 +34,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #F9A100;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #EE521C;
 }
 
 body {
@@ -83,7 +83,7 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: #EE521C;
   }
   button {
     background-color: #f9f9f9;
