@@ -103,3 +103,18 @@ body, html {
   position: relative;
   z-index: 2;
 }
+
+/* Styles for mobile screens */
+@media (max-width: 767px) {
+  .app-content {
+    padding: 5px;
+  }
+
+	.pattern {
+		/* margin-bottom: 5px; */
+	}
+
+	.instrument-button {
+		margin-bottom: 5px;
+	}
+}
