@@ -15,14 +15,17 @@ const AudioMotionVisualizer = ({ analyserNode, visualsEnabled }) => {
       source: analyserNode,
       height: window.innerHeight,
       width: window.innerWidth,
-      mode: 5,
+      mode: 10,
       smoothing: 0.7,
-      fillAlpha: 0.5,
-      gradient: 'rainbow',
+      gradient: 'prism',
       showScaleX: false,
       showPeaks: false,
       radial: true,
-
+      // isBandsMode: true,
+      outlineBars: true,
+      fillAlpha: 0.3,
+      lineWidth: 1,
+      spinSpeed: 1,
       loRes:true,
       overlay: true,
       bgAlpha: 0,
@@ -60,7 +63,7 @@ const AudioMotionVisualizer = ({ analyserNode, visualsEnabled }) => {
   // }
 
   // display: none if visualsEnabled is false
-  return <div ref={containerRef} className="audio-motion-visualizer" style={{ display: visualsEnabled ? 'block' : 'none' , scale: "200%"}} />;
+  return <div ref={containerRef} className="audio-motion-visualizer" style={{ display: visualsEnabled ? 'block' : 'none' , scale: "200%", opacity: 0.5}} />;
 };
 
 export default AudioMotionVisualizer;

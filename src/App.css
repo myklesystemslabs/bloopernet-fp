@@ -20,7 +20,7 @@ body, html {
   position: absolute;
   top: 0;
   left: 0;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   -webkit-overflow-scrolling: touch;
   /* Add any other specific styles for your content here */
   text-align: center;
