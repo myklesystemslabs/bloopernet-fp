@@ -1,11 +1,53 @@
-.app {
+:root {
+  --app-height: 100%;
+}
+
+/* You might want to add this if you have a background on the body or html */
+body, html {
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: var(--app-height);
+}
+
+
+.app-content {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Add any other specific styles for your content here */
   text-align: center;
   padding: 20px;
   max-width: 800px;  /* Adjust this value as needed */
   margin: 0 auto;    /* This centers the content horizontally */
-  position: relative;
   z-index: 2; /* This ensures the main app content is above the visualizer */
   min-height: 100vh;
+  height: var(--app-height);
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+
+body, html {
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: var(--app-height);
 }
 
 .app-title {
@@ -56,12 +98,6 @@
     width: 50%;
     box-sizing: border-box;
   }
-}
-
-/* You might want to add this if you have a background on the body or html */
-body, html {
-  position: relative;
-  z-index: 0;
 }
 
 .app-content {
