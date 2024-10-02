@@ -11,6 +11,7 @@ import TopControls from './components/TopControls';
 import { TimesyncProvider } from './TimesyncContext';
 import { initLatencyCompensation } from './audioUtils';
 import './App.css';
+import InviteButton from './components/InviteButton';
 
 const partyCxs = new Map();
 function partykitS3({ name, blockstore }, partyHost, refresh) {
@@ -170,6 +171,7 @@ function App() {
           />
           <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
 					<AppInfo />
+          <InviteButton />
         </div>
       </div>
     </TimesyncProvider>
