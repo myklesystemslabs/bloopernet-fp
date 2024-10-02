@@ -95,7 +95,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
   }, [instrument]);
 
   useEffect(() => {
-    if (playing && !wasPlaying) {
+    if (ts && playing && !wasPlaying) {
       console.log("play started");
       setWasPlaying(true);
       // Reset timing references when playback starts
@@ -123,12 +123,12 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
 
 
   useEffect(() => {
-    if (playing) {
+    if (ts && playing) {
       const quarterBeatInterval_ms = (15 / bpm) * 1000; // Duration of one quarter beat in milliseconds
       const intervalId = setInterval(scheduleNextQuarterBeat, quarterBeatInterval_ms);
       return () => clearInterval(intervalId);
     }
-  }, [playing, scheduleNextQuarterBeat, bpm]);
+  }, [ts, playing, scheduleNextQuarterBeat, bpm]);
 
   const playSound = () => {
     if (soundBuffer) {
