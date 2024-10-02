@@ -40,10 +40,22 @@ function App() {
   const { jamId } = useParams();
   const navigate = useNavigate();
   
+  // Truncate, sanitize, and validate jamId
+  const truncatedJamId = jamId ? jamId.slice(0, 40) : '';
+  const sanitizedJamId = truncatedJamId.replace(/[^a-zA-Z0-9-]/g, '');
+  const isValidJamId = /^[a-zA-Z0-9-]+$/.test(sanitizedJamId);
+  
+  useEffect(() => {
+    // Redirect to root if jamId is invalid or if the path is neither root nor a valid /jam/* path
+    if ((jamId && !isValidJamId) || (jamId != sanitizedJamId) || (sanitizedJamId && window.location.pathname !== '/' && !window.location.pathname.startsWith('/jam/'))) {
+      navigate('/', { replace: true });
+    }
+  }, [jamId, isValidJamId, navigate]);
+
   // Construct the database name based on the jamId
   const firstPathSegment = document.location.pathname.split('/')[1];  
   const baseDbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
-  const dbName = jamId ? `${baseDbName}-${jamId}` : baseDbName;
+  const dbName = isValidJamId ? `${baseDbName}-${sanitizedJamId}` : baseDbName;
 
   const { database, useLiveQuery } = useFireproof(dbName);
 
