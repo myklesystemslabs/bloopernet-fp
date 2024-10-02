@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AudioVisualizer from './components/AudioVisualizer';
+import AudioMotionVisualizer from './components/AudioMotionVisualizer';
 import { getAnalyserNode } from './audioUtils';
 import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
@@ -121,9 +121,12 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className="app">
-        <AudioVisualizer analyserNode={analyserNode} visualsEnabled={visualsEnabled} />
+        <AudioMotionVisualizer 
+          analyserNode={analyserNode} 
+          visualsEnabled={visualsEnabled} 
+        />
         <div className="app-content">
-          <h1 className="app-title" {...longPressHandlers}>Loopernet Demo</h1>
+          <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
           <TopControls 
             dbName={dbName} 
             isExpert={isExpert} 

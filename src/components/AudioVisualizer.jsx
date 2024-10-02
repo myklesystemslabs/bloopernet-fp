@@ -56,7 +56,7 @@ const AudioVisualizer = ({ analyserNode, visualsEnabled }) => {
 
         // Clear the area where we're about to draw
         // buffer.fill(0,0); // problematic, because the buffer.copy command respects the alpha channel
-        buffer.fill(0);
+        buffer.fill(26);
 
         buffer.noStroke();
         buffer.rect(p.width - SCROLL_SPEED, 0, SCROLL_SPEED, p.height);
@@ -67,7 +67,7 @@ const AudioVisualizer = ({ analyserNode, visualsEnabled }) => {
           previousY = p.height / 2;
         }
         previousX = p.width - SCROLL_SPEED;
-        
+
         for (let j = 0; j < SCROLL_SPEED; j++) {
 
           const x = p.width - SCROLL_SPEED + j;
