@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import p5 from 'p5';
 import './AudioVisualizer.css';
 
+const frameRate_hz = 20;
+
 const AudioVisualizer = ({ analyserNode, visualsEnabled }) => {
   const canvasRef = useRef(null);
   const p5InstanceRef = useRef(null);
@@ -27,13 +29,14 @@ const AudioVisualizer = ({ analyserNode, visualsEnabled }) => {
           return;
         }
 
+        p.frameRate(frameRate_hz);
         // this is the number of samples we take per draw
         const bufferLength = analyserNode.fftSize;
         const dataArray = new Uint8Array(bufferLength);
         analyserNode.getByteTimeDomainData(dataArray);
 
         // this is the number of pixels we shift per draw
-        const SCROLL_SPEED = p.width / (5 * 60);
+        const SCROLL_SPEED = Math.floor(p.width / (10 * frameRate_hz));
 
         // this is the ratio of sampes to pixels
         const SAMPLES_TO_PIXELS = SCROLL_SPEED / bufferLength;
@@ -46,7 +49,9 @@ const AudioVisualizer = ({ analyserNode, visualsEnabled }) => {
         ];
 
         // Shift existing content to the left
-        buffer.copy(buffer, SCROLL_SPEED, 0, p.width - SCROLL_SPEED, p.height, 0, 0, p.width - SCROLL_SPEED, p.height);
+        buffer.copy(buffer, 
+          SCROLL_SPEED, 0, p.width - SCROLL_SPEED, p.height, 
+          0,            0, p.width - SCROLL_SPEED, p.height);
         // TODO: how to ignore alpha channel in this copy?
 
         // Clear the area where we're about to draw
@@ -57,27 +62,23 @@ const AudioVisualizer = ({ analyserNode, visualsEnabled }) => {
         buffer.rect(p.width - SCROLL_SPEED, 0, SCROLL_SPEED, p.height);
 
         // Draw new data on the right edge
-          buffer.stroke(colors[2]);
-          for (let j = 0; j < SCROLL_SPEED; j++) {
-            if (previousX === -1) {
-              previousX = p.width - SCROLL_SPEED;
-              previousY = p.height / 2;
-            }
-            const x = p.width - SCROLL_SPEED + j;
-            const rawSample = dataArray[Math.floor(j / SAMPLES_TO_PIXELS) % bufferLength];
-            const floatSample = (rawSample - 128) / 128;
-            const screenSample = floatSample * p.height / 2;
-            if (screenSample < 0) {
-              console.log(screenSample);
-            }
-            const y = screenSample + (p.height / 2);
-            if (y < 0) {
-              console.log(y);
-            }
-            buffer.line(previousX, previousY, x, y);
-            previousX = x;
-            previousY = y;
-          }
+        buffer.stroke(colors[2]);
+        if (previousY === -1) {
+          previousY = p.height / 2;
+        }
+        previousX = p.width - SCROLL_SPEED;
+        
+        for (let j = 0; j < SCROLL_SPEED; j++) {
+
+          const x = p.width - SCROLL_SPEED + j;
+          const rawSample = dataArray[Math.floor(j / SAMPLES_TO_PIXELS) % bufferLength];
+          const floatSample = (rawSample - 128) / 128;
+          const screenSample = floatSample * p.height / 2;
+          const y = screenSample + (p.height / 2);
+          buffer.line(previousX, previousY, x, y);
+          previousX = x;
+          previousY = y;
+        }
 
         // Display the buffer
         p.image(buffer, 0, 0);
