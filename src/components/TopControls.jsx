@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
-import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer} from '../audioUtils';
 import './TopControls.css';
 
 const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled }) => {
@@ -119,7 +119,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
 
   const toggleMute = async () => {
     const newMutedState = !muted;
-    await setMasterMute(newMutedState);
+    setMasterMute(newMutedState);
     setMuted(newMutedState);
   };
 
@@ -153,9 +153,9 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
             <button className="control-button theme-toggle" onClick={toggleTheme}>
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
-            <button className="control-button visuals-toggle" onClick={toggleVisuals}>
-              {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
-            </button>
+            {/* <button className="control-button visuals-toggle" onClick={toggleVisuals}> */}
+            {/*   {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'} */}
+            {/* </button> */}
           </>
         )}
       </div>
