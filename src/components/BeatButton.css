@@ -5,9 +5,10 @@
 }
 
 [data-theme="dark"] {
-  --beat-inactive: #FF6B35;
+  --beat-inactive: #966659;
   --beat-active: #FF8C42;
   --beat-current: #FFA500;
+  --beat-current-active: #FFD700;
 }
 
 .beat-button {
@@ -39,6 +40,10 @@
 
 .beat-button.active::after {
   background-color: var(--beat-active);
+}
+
+.beat-button.current.active::after {
+  background-color: var(--beat-current-active) !important;
 }
 
 .beat-button.current {
