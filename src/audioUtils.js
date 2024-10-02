@@ -61,7 +61,7 @@ export const setMasterMute = async (mute) => {
     // Short delay to allow audio to initialize
     setTimeout(() => {
       masterGainNode.gain.setValueAtTime(1, ctx.currentTime);
-    }, 50);
+    }, 200);
   } else { // Muting
     masterGainNode.gain.setValueAtTime(0, ctx.currentTime);
   }
