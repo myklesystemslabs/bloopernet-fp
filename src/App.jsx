@@ -144,6 +144,7 @@ function App() {
             visualsEnabled={visualsEnabled}
           />
           <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
+					<AppInfo />
         </div>
       </div>
     </TimesyncProvider>
@@ -151,3 +152,11 @@ function App() {
 }
 
 export default App;
+
+const AppInfo = () => (
+  <footer>
+    <p>
+      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
+    </p>
+  </footer>
+);
