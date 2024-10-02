@@ -42,9 +42,14 @@ function App() {
   const { database, useLiveQuery } = useFireproof(dbName);
 
   const [isExpert, setIsExpert] = useState(false);
+  const [theme, setTheme] = useState('dark');
 
   const toggleExpert = () => {
     setIsExpert(!isExpert);
+  };
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
   const handleLongPress = (callback, duration = 500) => {
@@ -87,16 +92,40 @@ function App() {
     beats[row.doc._id] = row.doc.isActive;
   });
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    // Fix for mobile viewport height
+    const appHeight = () => {
+      const doc = document.documentElement;
+      doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    window.addEventListener('resize', appHeight);
+    appHeight();
+    return () => window.removeEventListener('resize', appHeight);
+  }, []);
+
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
-      <div className="app">
+      <div className={`app ${theme}`}>
         <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
-        <TopControls dbName={dbName} isExpert={isExpert}  />
+        <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
         {/* <LatencySlider /> */}
+        <AppInfo />
       </div>
     </TimesyncProvider>
   );
 }
 
 export default App;
+
+const AppInfo = () => (
+  <footer>
+    <p>
+      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
+    </p>
+  </footer>
+);

@@ -11,15 +11,34 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --bg-color: #ffffff;
+  --text-color: #213547;
+  --button-bg: #f9f9f9;
+  --button-text: #213547;
+  --button-border: #ccc;
+  --accent-color: #646cff;
+  --app-bg: #f0f0f0;
+  --app-height: 100%;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --button-bg: #333333;
+  --button-text: #ffffff;
+  --button-border: #555555;
+  --accent-color: #bb86fc;
+  --app-bg: #1a1a1a;
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #F9A100;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #EE521C;
 }
 
 body {
@@ -28,6 +47,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--app-bg);
+  color: var(--text-color);
 }
 
 h1 {
@@ -42,12 +63,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--button-border);
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--accent-color);
 }
 button:focus,
 button:focus-visible {
@@ -60,7 +83,7 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: #EE521C;
   }
   button {
     background-color: #f9f9f9;
@@ -69,25 +92,72 @@ button:focus-visible {
 
 html, body, #root {
   height: 100%;
+  min-height: 100vh; /* fallback for older browsers */
+  min-height: var(--app-height);
   margin: 0;
   padding: 0;
+  background-color: var(--app-bg);
+  color: var(--text-color);
 }
 
 #root {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+  flex-direction: column;
+  min-height: 100vh; /* fallback for older browsers */
+  min-height: var(--app-height);
 }
 
 .app {
+  flex: 1;
   width: 100%;
-  max-width: 800px;  /* Adjust this value as needed */
+  max-width: 1000px;
+  margin: auto;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
 
 .app-title {
   font-size: 2rem;
   margin-bottom: 20px;
+}
+
+/* Additional reset rules */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Styles for larger screens */
+@media (min-width: 768px) {
+  #root {
+    padding: 20px 0;
+    justify-content: center;
+  }
+
+  .app {
+    flex: 0 1 auto; /* Don't grow to full height on larger screens */
+  }
+}
+
+/* Styles for mobile screens */
+@media (max-width: 767px) {
+  .app {
+    border-radius: 0; /* Remove border radius on mobile for full-bleed effect */
+  }
 }
