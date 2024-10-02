@@ -110,7 +110,7 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
-        <h1 className="app-title" {...longPressHandlers}>Bloopernet Live</h1>
+        <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
         <TopControls dbName={dbName} isExpert={isExpert} toggleTheme={toggleTheme} theme={theme} />
         <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
         {/* <LatencySlider /> */}
