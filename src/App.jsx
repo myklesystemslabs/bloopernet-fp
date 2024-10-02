@@ -42,7 +42,10 @@ function App() {
 
   const [isExpert, setIsExpert] = useState(false);
   const [theme, setTheme] = useState('dark');
-  const [visualsEnabled, setVisualsEnabled] = useState(false);
+  const [visualsEnabled, setVisualsEnabled] = useState(() => {
+    const saved = localStorage.getItem('visualsEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
   const [analyserNode, setAnalyserNode] = useState(null);
 
   const toggleExpert = () => {
@@ -115,17 +118,21 @@ function App() {
   }, []);
 
   const toggleVisuals = () => {
-    setVisualsEnabled(prev => !prev);
+    setVisualsEnabled(prev => {
+      const newState = !prev;
+      localStorage.setItem('visualsEnabled', JSON.stringify(newState));
+      return newState;
+    });
   };
 
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
-      <div className="app" style={{ height: 'var(--app-height)' }}>
+      <div className="app">
         <AudioMotionVisualizer 
           analyserNode={analyserNode} 
           visualsEnabled={visualsEnabled} 
         />
-        <div className="app-content" >
+        <div className="app-content" style={{ height: 'var(--app-height)' }}>
           <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
           <TopControls 
             dbName={dbName} 

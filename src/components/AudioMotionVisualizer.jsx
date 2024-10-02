@@ -23,8 +23,7 @@ const AudioMotionVisualizer = ({ analyserNode, visualsEnabled }) => {
       showPeaks: false,
       radial: true,
 
-      // loRes:true,
-      pixelRatio: 2,
+      loRes:true,
       overlay: true,
       bgAlpha: 0,
     });
