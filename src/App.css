@@ -20,12 +20,11 @@ body, html {
   position: absolute;
   top: 0;
   left: 0;
-  /* overflow-y: auto; */
   -webkit-overflow-scrolling: touch;
   /* Add any other specific styles for your content here */
   text-align: center;
   padding: 20px;
-  max-width: 800px;  /* Adjust this value as needed */
+  max-width: 885px;  /* Adjust this value as needed */
   margin: 0 auto;    /* This centers the content horizontally */
   z-index: 2; /* This ensures the main app content is above the visualizer */
   min-height: 100vh;
