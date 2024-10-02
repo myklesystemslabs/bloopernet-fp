@@ -6,6 +6,7 @@ let masterGainNode = null;
 let silenceBuffer = null;
 let isMuted = true;
 let latencyCompensation = 0;
+let analyserNode = null;
 
 export const getAudioContext = () => {
   if (!audioContext) {
@@ -16,8 +17,17 @@ export const getAudioContext = () => {
     
     // Create master gain node
     masterGainNode = audioContext.createGain();
-    masterGainNode.connect(audioContext.destination);
     masterGainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start muted
+
+      // Create and configure the AnalyserNode
+    analyserNode = audioContext.createAnalyser();
+    analyserNode.fftSize = 1024; // Adjust as needed
+    analyserNode.smoothingTimeConstant = 0.8; // Adjust for desired smoothing
+
+    // Insert the analyserNode after the master gain node
+    masterGainNode.connect(analyserNode);
+    analyserNode.connect(audioContext.destination);
+
   }
   return audioContext;
 };
@@ -97,7 +107,7 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
       source.connect(masterGainNode);
       source.start();
     }, adjustedTime);
-    console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
+    //console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
     return event;
   } else {
     console.warn("too late to schedule beat");
@@ -107,3 +117,7 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
 export const clearScheduledEvents = (events) => {
   events.forEach(event => event.clear());
 };
+
+export const getAnalyserNode = () => {
+  return analyserNode;
+}
