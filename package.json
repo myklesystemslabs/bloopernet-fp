@@ -19,8 +19,10 @@
     "normalize.css": "^8.0.1",
     "p5": "^1.11.0",
     "partysocket": "1.0.2",
+    "qrcode.react": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
     "timesync": "^1.0.11",
     "use-fireproof": "^0.18.0",
     "waaclock": "^0.5.5"

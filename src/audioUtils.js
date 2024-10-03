@@ -98,7 +98,8 @@ export const initLatencyCompensation = () => {
 
 export const scheduleBeat = (soundBuffer, audioTime_s) => {
   let ctxtime = getAudioContext().currentTime;
-  const adjustedTime = audioTime_s + (latencyCompensation / 1000);
+  //const adjustedTime = audioTime_s + (latencyCompensation / 1000);
+  const adjustedTime = audioTime_s;
   
   if (adjustedTime > ctxtime) {
     const source = getAudioContext().createBufferSource();

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import AudioMotionVisualizer from './components/AudioMotionVisualizer';
 import { getAnalyserNode } from './audioUtils';
 import { useFireproof } from 'use-fireproof';
@@ -6,10 +7,11 @@ import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
-import LatencySlider from './components/LatencySlider';
+//import LatencySlider from './components/LatencySlider';
 import { TimesyncProvider } from './TimesyncContext';
 import { initLatencyCompensation } from './audioUtils';
 import './App.css';
+import InviteButton from './components/InviteButton';
 
 const partyCxs = new Map();
 function partykitS3({ name, blockstore }, partyHost, refresh) {
@@ -36,9 +38,26 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
-  const firstPathSegment = document.location.pathname.split('/')[1];  
-  const dbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
+  const { jamId } = useParams();
+  const navigate = useNavigate();
   
+  // Truncate, sanitize, and validate jamId
+  const truncatedJamId = jamId ? jamId.slice(0, 40) : '';
+  const sanitizedJamId = truncatedJamId.replace(/[^a-zA-Z0-9-]/g, '');
+  const isValidJamId = /^[a-zA-Z0-9-]+$/.test(sanitizedJamId);
+  
+  useEffect(() => {
+    // Redirect to root if jamId is invalid or if the path is neither root nor a valid /jam/* path
+    if ((jamId && !isValidJamId) || (jamId != sanitizedJamId) || (sanitizedJamId && window.location.pathname !== '/' && !window.location.pathname.startsWith('/jam/'))) {
+      navigate('/', { replace: true });
+    }
+  }, [jamId, isValidJamId, navigate]);
+
+  // Construct the database name based on the jamId
+  const firstPathSegment = document.location.pathname.split('/')[1];  
+  const baseDbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
+  const dbName = isValidJamId ? `${baseDbName}-${sanitizedJamId}` : baseDbName;
+
   const { database, useLiveQuery } = useFireproof(dbName);
 
   const [isExpert, setIsExpert] = useState(false);
@@ -83,6 +102,13 @@ function App() {
   useEffect(() => {
     initLatencyCompensation();
   }, []);
+
+  useEffect(() => {
+    // If there's a path that's not / or /jam/*, redirect to /
+    if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/jam/')) {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
 
   if (partyKitHost) {
     const connection = partykitS3(database, partyKitHost);
@@ -145,13 +171,26 @@ function App() {
           />
           <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
 					<AppInfo />
+          <InviteButton />
         </div>
       </div>
     </TimesyncProvider>
   );
 }
 
-export default App;
+function RoutedApp() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/jam/:jamId" element={<App />} />
+        <Route path="/" element={<App />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default RoutedApp;
 
 const AppInfo = () => (
   <footer>
