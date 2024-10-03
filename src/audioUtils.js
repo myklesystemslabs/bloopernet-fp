@@ -101,10 +101,10 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
   const adjustedTime = audioTime_s + (latencyCompensation / 1000);
   
   if (adjustedTime > ctxtime) {
+    const source = getAudioContext().createBufferSource();
+    source.buffer = soundBuffer;
+    source.connect(masterGainNode);
     const event = clock.callbackAtTime(() => {
-      const source = getAudioContext().createBufferSource();
-      source.buffer = soundBuffer;
-      source.connect(masterGainNode);
       source.start();
     }, adjustedTime);
     //console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
