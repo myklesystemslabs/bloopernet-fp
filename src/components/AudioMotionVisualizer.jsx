@@ -29,6 +29,13 @@ const AudioMotionVisualizer = ({ analyserNode, visualsEnabled }) => {
       loRes:true,
       overlay: true,
       bgAlpha: 0,
+
+      // radialInvert: true,
+      // reflexRatio: 0.5,
+      // reflexAlpha: 0.5,
+
+      fadePeaks: true,  
+      maxFPS: 30,
     });
 
     setIsInitialized(true);
@@ -63,7 +70,7 @@ const AudioMotionVisualizer = ({ analyserNode, visualsEnabled }) => {
   // }
 
   // display: none if visualsEnabled is false
-  return <div ref={containerRef} className="audio-motion-visualizer" style={{ display: visualsEnabled ? 'block' : 'none' , scale: "200%", opacity: 0.5}} />;
+  return <div ref={containerRef} className="audio-motion-visualizer" style={{ display: visualsEnabled ? 'block' : 'none' , scale: "150%", opacity: 0.5}} />;
 };
 
 export default AudioMotionVisualizer;
