@@ -114,7 +114,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     }, Math.floor(Math.random() * 4000) + 1000);
 
     return () => clearTimeout(timer);
-  }, [ts, togglePlay]);
+  }, [ts]);
 
 
   const toggleMute = async () => {
