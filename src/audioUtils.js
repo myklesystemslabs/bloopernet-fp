@@ -7,6 +7,7 @@ let silenceBuffer = null;
 let isMuted = true;
 let latencyCompensation = 0;
 let analyserNode = null;
+let headStart_ms = 500; 
 
 export const getAudioContext = () => {
   if (!audioContext) {
@@ -108,7 +109,7 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
     const event = clock.callbackAtTime(() => {
       source.start();
     }, adjustedTime);
-    //console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
+    console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
     return event;
   } else {
     console.warn("too late to schedule beat");
@@ -122,3 +123,11 @@ export const clearScheduledEvents = (events) => {
 export const getAnalyserNode = () => {
   return analyserNode;
 }
+
+export const getHeadStart_ms = () => {
+  return headStart_ms;
+};
+
+export const getHeadStart_s = () => {
+  return headStart_ms / 1000;
+};

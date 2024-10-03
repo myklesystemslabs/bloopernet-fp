@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
-import { loadSound, clearScheduledEvents, playSoundBuffer, getAudioContext, scheduleBeat } from '../audioUtils';
+import { loadSound, clearScheduledEvents, playSoundBuffer, getAudioContext, scheduleBeat, getHeadStart_ms } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
@@ -53,7 +53,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
     const quarterBeatDuration_ms = quarterBeatDuration_s * 1000;
 
     // Calculate the next quarter beat start time
-    const nextQuarterBeatNumber = Math.ceil(elapsedTimesyncTime_ms / quarterBeatDuration_ms);
+    const nextQuarterBeatNumber = Math.ceil((elapsedTimesyncTime_ms + getHeadStart_ms()) / quarterBeatDuration_ms);
     const nextQuarterBeatStart_ms = nextQuarterBeatNumber * quarterBeatDuration_ms;
 
     // relative time to schedule
@@ -69,7 +69,6 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
 
     // Only schedule if it's in the future
     if (audioTimeToSchedule_s > currentAudioTime_s) {
-      //clearScheduledEvents(scheduledEventsRef.current);
       scheduledEventsRef.current = scheduleBeats(
         timesyncStartTime_ms.current + nextQuarterBeatStart_ms,
         audioTimeToSchedule_s,
@@ -104,10 +103,10 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       const delta_s = (ts.now() - (bpmDoc?.lastChanged_ms || 0)) / 1000;
       // console.log("timesyncStartTime secs: ", timesyncStartTime_ms.current / 1000);
 
-      // Play the first beat immediately
-      if (soundBuffer && beats[`beat-${instrument.toLowerCase()}-0`]) {
-        playSoundBuffer(soundBuffer);
-      }
+      // // Play the first beat immediately
+      // if (soundBuffer && beats[`beat-${instrument.toLowerCase()}-0`]) {
+      //   playSoundBuffer(soundBuffer);
+      // }
 
       // Schedule the next beat
       scheduleNextQuarterBeat();

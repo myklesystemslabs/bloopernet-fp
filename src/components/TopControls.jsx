@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
-import { setMasterMute, isMasterMuted, loadSilenceBuffer} from '../audioUtils';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms} from '../audioUtils';
 import './TopControls.css';
 
 const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled }) => {
@@ -52,11 +52,13 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   };
 
   const updateBPMDoc = async (updates) => {
-    const timestamp = ts.now();
+    if (!ts){console.warn("no timesync"); return;}
+    if (! updates.lastChanged_ms) {
+      updates.lastChanged_ms = ts.now();
+    }
     const newBpmDoc = {
       ...bpmDoc,
       ...updates,
-      lastChanged_ms: timestamp
     };
 
     try {
@@ -94,17 +96,20 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   };
 
   const togglePlay = useCallback(() => {
+    if (!ts){console.warn("no timesync"); return;}
     if (!ts) return;
     const newPlayingState = !playing;
     setPlaying(newPlayingState);
     updateBPMDoc({ 
       playing: newPlayingState, 
       bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
-      lastChanged_ms: ts.now() // Reset the start time when playing is toggled to true 
+      lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
     });
   }, [playing, bpmDoc, tempBpm, ts]);
 
+  // autoplay if paused at startup:
   useEffect(() => {
+    if (!ts){console.warn("no timesync"); return;}
     if (!ts) return;
     const timer = setTimeout(() => {
       if (!playing) {
