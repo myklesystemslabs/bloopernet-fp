@@ -15,7 +15,6 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
 
-  
 
   useEffect(() => {
     if (bpmDoc) {
@@ -52,8 +51,6 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     }
   };
 
-  // Remove the handleNuke function
-
   const updateBPMDoc = async (updates) => {
     const timestamp = ts.now();
     const newBpmDoc = {
@@ -74,6 +71,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   };
 
 
+  // update the BPM after the user has stopped moving the slider for 500ms, even if they don't release it yet.
   const handleBpmChange = (e) => {
     const newBpm = Math.max(30, Math.min(240, parseInt(e.target.value, 10)));
     setTempBpm(newBpm);
@@ -87,6 +85,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     }, 500);
   };
 
+  // update the BPM immediately if the user releases the slider
   const handleBpmChangeComplete = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -101,7 +100,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     updateBPMDoc({ 
       playing: newPlayingState, 
       bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
-      lastChanged_ms: ts.now() // Reset the start time when playing is toggled to true // todo: change to lastChanged_ms
+      lastChanged_ms: ts.now() // Reset the start time when playing is toggled to true 
     });
   }, [playing, bpmDoc, tempBpm, ts]);
 
