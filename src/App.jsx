@@ -155,10 +155,10 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
-        {/* <AudioMotionVisualizer 
+        <AudioMotionVisualizer 
           analyserNode={analyserNode} 
           visualsEnabled={visualsEnabled} 
-        /> */}
+        />
         <div className="app-content" style={{ height: 'var(--app-height)' }}>
           <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
           <TopControls 

@@ -153,9 +153,9 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
             <button className="control-button theme-toggle" onClick={toggleTheme}>
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
-            {/* <button className="control-button visuals-toggle" onClick={toggleVisuals}> */}
-            {/*   {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'} */}
-            {/* </button> */}
+            <button className="control-button visuals-toggle" onClick={toggleVisuals}>
+              {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
+            </button>
           </>
         )}
       </div>
