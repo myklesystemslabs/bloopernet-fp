@@ -33,6 +33,13 @@ export const getAudioContext = () => {
   return audioContext;
 };
 
+export const getDefaultLatency = () => {
+  const ac = getAudioContext();
+  const latency = ac.baseLatency + ac.outputLatency;
+ // console.log("device latency: ", latency, "ms");
+  return latency;
+};
+
 export const loadSilenceBuffer = async () => {
   if (!silenceBuffer) {
     try {
@@ -109,7 +116,7 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
     const event = clock.callbackAtTime(() => {
       source.start();
     }, adjustedTime);
-    console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
+    //console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
     return event;
   } else {
     console.warn("too late to schedule beat");
@@ -125,9 +132,9 @@ export const getAnalyserNode = () => {
 }
 
 export const getHeadStart_ms = () => {
-  return headStart_ms;
+  return headStart_ms - getDefaultLatency();
 };
 
 export const getHeadStart_s = () => {
-  return headStart_ms / 1000;
+  return getHeadStart_ms() / 1000;
 };
