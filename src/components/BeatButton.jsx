@@ -1,7 +1,7 @@
 import React from 'react';
 import './BeatButton.css';
 
-const BeatButton = ({ instrumentName, beatIndex, isActive, isCurrent, updateBeat, className }) => {
+const BeatButton = ({ instrumentName, beatIndex, isActive, isCurrent, isStarting, updateBeat, className }) => {
   const buttonId = `beat-${instrumentName.toLowerCase().replace(/\s+/g, '-')}-${beatIndex}`;
 
   const handleClick = () => {
@@ -11,7 +11,7 @@ const BeatButton = ({ instrumentName, beatIndex, isActive, isCurrent, updateBeat
   return (
     <div
       onClick={handleClick}
-      className={`beat-button ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${className}`}
+      className={`beat-button ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isStarting ? 'starting' : ''} ${className}`}
       data-id={buttonId}
     >
       <div className="beat-button-inner" />

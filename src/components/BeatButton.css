@@ -9,6 +9,7 @@
   --beat-active: #FF8C42;
   --beat-current: #FFA500;
   --beat-current-active: #FFD700;
+  --beat-starting: #6d1745;
 }
 
 .beat-button {
@@ -21,6 +22,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.beat-button.active.starting {
+  background-color: var(--beat-starting) !important;
 }
 
 .beat-button::after {
@@ -48,6 +53,9 @@
 
 .beat-button.current {
   box-shadow: 0 0 0 3px var(--beat-current);
+}
+.beat-button.current.starting {
+  box-shadow: 0 0 0 3px var(--beat-starting);
 }
 
 /* Ensure active beats stand out */
