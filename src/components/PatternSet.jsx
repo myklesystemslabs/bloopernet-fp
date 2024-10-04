@@ -18,6 +18,7 @@ const PatternSet = ({ dbName, instruments, beats}) => {
    const playing = bpmDoc?.playing || false;
 
   const calculateElapsedQuarterBeats = useCallback(() => {
+    if (!ts){console.warn("no timesync"); return 0;}
     if (!ts || !bpm || !lastChanged_ms || !playing) return 0;
     const currentTime_ms = ts.now();
     const elapsedTime_ms = currentTime_ms - lastChanged_ms;
