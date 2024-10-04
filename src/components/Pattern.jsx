@@ -13,7 +13,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
   const timesyncStartTime_ms = useRef(null);
 
   // used for decorating buttons
-  const currentQuarterBeat = (elapsedQuarterBeats) % patternLength;
+  const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
 
   const bpm = bpmDoc?.bpm || 120;
   const playing = bpmDoc?.playing || false;
@@ -150,6 +150,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
             beatIndex={index} 
             isActive={beats[`beat-${instrument.toLowerCase()}-${index}`] || false}
             isCurrent={playing && index === currentQuarterBeat}
+            isStarting={elapsedQuarterBeats < 0 && playing}
             updateBeat={updateBeat}
             className={`beat-group-${i}`}
           />

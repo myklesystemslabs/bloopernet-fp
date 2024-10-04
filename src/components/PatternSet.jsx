@@ -16,14 +16,20 @@ const PatternSet = ({ dbName, instruments, beats}) => {
    const bpm = bpmDoc?.bpm || 120;
    const lastChanged_ms = bpmDoc?.lastChanged_ms || (ts ? ts.now() : Date.now()); // Use timesync for default value if available
    const playing = bpmDoc?.playing || false;
+   const prevQuarterBeats = bpmDoc?.prevQuarterBeats || 0;
 
   const calculateElapsedQuarterBeats = useCallback(() => {
     if (!ts){console.warn("no timesync"); return 0;}
     if (!ts || !bpm || !lastChanged_ms || !playing) return 0;
     const currentTime_ms = ts.now();
     const elapsedTime_ms = currentTime_ms - lastChanged_ms;
-    return Math.floor((elapsedTime_ms / 60000) * bpm * 4); // 60000 ms in a minute, 4 quarter beats per beat
-  }, [ts, bpm, lastChanged_ms, playing]);
+    const elapsedQuarterBeats = Math.floor((elapsedTime_ms / 60000) * bpm * 4) + prevQuarterBeats; // 60000 ms in a minute, 4 quarter beats per beat
+    // console.log("elapsedQuarterBeats: ", elapsedQuarterBeats);
+    if (elapsedQuarterBeats == 0){
+      console.log("elapsedQuarterBeats is 0");
+    } 
+    return elapsedQuarterBeats;
+  }, [ts, bpm, lastChanged_ms, playing, prevQuarterBeats]);
 
   useEffect(() => {
     if (playing) {

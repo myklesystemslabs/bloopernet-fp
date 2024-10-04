@@ -72,6 +72,14 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     }
   };
 
+  const setBPM = (bpm) => {
+    // calculate prevQuarterBeats based on bpm and current time
+    const currentTime_ms = ts.now();
+    const elapsedTime_ms = currentTime_ms - bpmDoc.lastChanged_ms;
+    const elapsedQuarterBeats = Math.floor((elapsedTime_ms / 60000) * bpm * 4) + bpmDoc?.prevQuarterBeats || 0;
+    updateBPMDoc({ bpm: bpm, prevQuarterBeats: elapsedQuarterBeats });
+  };
+
 
   // update the BPM after the user has stopped moving the slider for 500ms, even if they don't release it yet.
   const handleBpmChange = (e) => {
@@ -83,7 +91,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     }
 
     timeoutRef.current = setTimeout(() => {
-      updateBPMDoc({ bpm: newBpm });
+      setBPM(newBpm);
     }, 500);
   };
 
@@ -92,7 +100,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    updateBPMDoc({ bpm: tempBpm });
+    setBPM(tempBpm);
   };
 
   const togglePlay = useCallback(() => {
@@ -100,11 +108,17 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     if (!ts) return;
     const newPlayingState = !playing;
     setPlaying(newPlayingState);
-    updateBPMDoc({ 
+    let update = { 
       playing: newPlayingState, 
       bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
-      lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
-    });
+      //lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
+   //   lastChanged_ms: ts.now() + getHeadStart_ms()
+      lastChanged_ms: ts.now()
+    };
+    if (newPlayingState){
+      update.prevQuarterBeats = 0;
+    }
+    updateBPMDoc(update);
   }, [playing, bpmDoc, tempBpm, ts]);
 
   // autoplay if paused at startup:
