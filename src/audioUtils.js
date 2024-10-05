@@ -36,7 +36,7 @@ export const getAudioContext = () => {
 export const getDefaultLatency = () => {
   const ac = getAudioContext();
   var latency = 0;
-  latency += (ac.baselatency || 0);   // should be defined everywhere but you never know
+  latency += (ac.baseLatency || 0);   // should be defined everywhere but you never know
   latency += (ac.outputLatency || 0); // undefined on safari
  // console.log("device latency: ", latency, "ms");
   return latency;
