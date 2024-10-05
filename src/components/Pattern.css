@@ -109,6 +109,7 @@
   opacity: 0.8;
 }
 
+.pattern-controls .info-button,
 .pattern-controls .mute-button,
 .pattern-controls .solo-button {
   margin-left: 5px;
@@ -129,4 +130,25 @@
 	.pattern-controls .solo-button {	
 		margin-right: 0px;
 	}
+}
+
+.info-button {
+  margin-left: 0px;
+  margin-right: 5px;
+  border-color: #0074D9;
+  color: #0074D9;
+  font-style: italic;
+}
+
+.info-button.active {
+  background-color: #0074D9;
+  color: white;
+}
+
+.info-button:hover {
+  background-color: #ddebff;
+}
+
+.info-button.active:hover {
+  opacity: 0.8;
 }

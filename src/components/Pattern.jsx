@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
+import InstrumentInfo from './InstrumentInfo';
 import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHeadStart_ms, getMasterGainNode, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
-const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed }) => {
+const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed, onNameChange }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
   const gainNodeRef = useRef(null);
@@ -13,6 +14,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, i
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
   const timesyncStartTime_ms = useRef(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -22,11 +24,11 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, i
 
   useEffect(() => {
     const loadInstrumentSound = async () => {
-      const buffer = await loadSound(`/sounds/${instrument.toLowerCase()}.wav`);
+      const buffer = await loadSound(audioFile);
       setSoundBuffer(buffer);
     };
     loadInstrumentSound();
-  }, [instrument]);
+  }, [audioFile]);
 
   useEffect(() => {
     if (!gainNodeRef.current) {
@@ -175,16 +177,30 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, i
     return groups;
   };
 
+  const toggleInfo = () => {
+    setShowInfo(!showInfo);
+  };
+
   return (
     <div className="pattern">
       <div className="pattern-controls">
+        <button className={`info-button ${showInfo ? 'active' : ''}`} onClick={toggleInfo}>ⓘ</button>
         <button className="instrument-button" onClick={playSound}>{instrument}</button>
         <button className={`mute-button ${isMuted ? 'active' : ''}`} onClick={onMuteToggle}>M</button>
         <button className={`solo-button ${isSolo ? 'active' : ''}`} onClick={onSoloToggle}>S</button>
       </div>
-      <div className="beat-buttons">
-        {renderBeatButtons()}
-      </div>
+      {showInfo ? (
+        <InstrumentInfo
+          instrument={instrument}
+          instrumentId={instrumentId}
+          audioFile={audioFile}
+          onNameChange={onNameChange}
+        />
+      ) : (
+        <div className="beat-buttons">
+          {renderBeatButtons()}
+        </div>
+      )}
     </div>
   );
 };
