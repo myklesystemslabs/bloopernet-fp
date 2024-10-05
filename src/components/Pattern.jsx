@@ -4,7 +4,7 @@ import { loadSound, clearScheduledEvents, playSoundBuffer, getAudioContext, sche
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
-const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats }) => {
+const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
   const ts = useTimesync();
@@ -19,7 +19,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
   const playing = bpmDoc?.playing || false;
 
   const scheduleBeats = useCallback((nextQuarterBeatStart_ms, scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
-    if (!soundBuffer || !playing) return [];
+    if (!soundBuffer || !playing || isMuted || (isSolo === false && anyTrackSoloed)) return [];
 
     const secondsPerQuarterBeat_s = 15 / bpm;
     const scheduledEvents = [];
@@ -40,7 +40,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
     }
 
     return scheduledEvents;
-  }, [instrument, soundBuffer, beats, bpm, playing]);
+  }, [instrument, soundBuffer, beats, bpm, playing, isMuted, isSolo]);
 
   const scheduleNextQuarterBeat = useCallback(() => {
     if (!soundBuffer || !playing || !ts || timesyncStartTime_ms.current === null) return;
@@ -79,7 +79,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       console.warn("too late to schedule by ", (audioTimeToSchedule_s - currentAudioTime_s), " seconds");
     }
 
-  }, [instrument, soundBuffer, beats, bpm, playing, ts]);
+  }, [instrument, soundBuffer, beats, bpm, playing, ts, isMuted, isSolo]);
   useEffect(() => {
     const loadInstrumentSound = async () => {
       try {
@@ -118,8 +118,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       setWasPlaying(false);
     }
   //}, [playing, ts, soundBuffer, beats, instrument, scheduleNextQuarterBeat]);
-  }, [playing, ts, soundBuffer, beats, instrument]);
-
+  }, [playing, ts, soundBuffer, beats, instrument, isMuted, isSolo]);
 
   useEffect(() => {
     if (ts && playing) {
@@ -127,7 +126,7 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
       const intervalId = setInterval(scheduleNextQuarterBeat, quarterBeatInterval_ms);
       return () => clearInterval(intervalId);
     }
-  }, [ts, playing, scheduleNextQuarterBeat, bpm]);
+  }, [ts, playing, scheduleNextQuarterBeat, bpm, isMuted, isSolo]);
 
   const playSound = () => {
     if (soundBuffer) {
@@ -167,7 +166,11 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats })
 
   return (
     <div className="pattern">
-      <button className="instrument-button" onClick={playSound}>{instrument}</button>
+      <div className="pattern-controls">
+        <button className="instrument-button" onClick={playSound}>{instrument}</button>
+        <button className={`mute-button ${isMuted ? 'active' : ''}`} onClick={onMuteToggle}>M</button>
+        <button className={`solo-button ${isSolo ? 'active' : ''}`} onClick={onSoloToggle}>S</button>
+      </div>
       <div className="beat-buttons">
         {renderBeatButtons()}
       </div>

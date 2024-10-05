@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
+import { getHeadStart_ms } from '../audioUtils';
 import './PatternSet.css';
 
-const PatternSet = ({ dbName, instruments, beats}) => {
+const PatternSet = ({ dbName, instruments, beats }) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
   const { database, useLiveQuery } = useFireproof(dbName);
@@ -59,9 +60,28 @@ const PatternSet = ({ dbName, instruments, beats}) => {
     await database.put({ ...doc, isActive });
   };
 
+  const [mutedTracks, setMutedTracks] = useState({});
+  const [soloedTracks, setSoloedTracks] = useState({});
+
+  const handleMuteToggle = useCallback((instrument) => {
+    setMutedTracks(prev => ({
+      ...prev,
+      [instrument]: !prev[instrument]
+    }));
+  }, []);
+
+  const handleSoloToggle = useCallback((instrument) => {
+    setSoloedTracks(prev => ({
+      ...prev,
+      [instrument]: !prev[instrument]
+    }));
+  }, []);
+
+  const anyTrackSoloed = Object.values(soloedTracks).some(Boolean);
+
   return (
     <div className="pattern-set">
-      {instruments.map(instrument => (
+      {instruments.map((instrument) => (
         <Pattern
           key={instrument}
           instrument={instrument}
@@ -69,6 +89,11 @@ const PatternSet = ({ dbName, instruments, beats}) => {
           updateBeat={updateBeat}
           bpmDoc={bpmDoc}
           elapsedQuarterBeats={elapsedQuarterBeats}
+          isMuted={mutedTracks[instrument] || false}
+          isSolo={soloedTracks[instrument] || false}
+          onMuteToggle={() => handleMuteToggle(instrument)}
+          onSoloToggle={() => handleSoloToggle(instrument)}
+          anyTrackSoloed={anyTrackSoloed}
         />
       ))}
     </div>

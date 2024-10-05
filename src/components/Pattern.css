@@ -63,3 +63,25 @@
 .beat-group:nth-child(even) {
   background-color: var(--beat-group-even);
 }
+
+.pattern-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mute-button,
+.solo-button {
+  margin-left: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.mute-button.active,
+.solo-button.active {
+  background-color: #007bff;
+  color: white;
+}
