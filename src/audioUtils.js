@@ -12,7 +12,8 @@ let headStart_ms = 2000;
 export const getAudioContext = () => {
   if (!audioContext) {
     console.log("getAudioContext");
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const options = {latencyHint: 'balanced'};
+    audioContext = new (window.AudioContext || window.webkitAudioContext)(options);
     clock = new WAAClock(audioContext);
     clock.start();
     
