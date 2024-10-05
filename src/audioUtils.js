@@ -7,7 +7,7 @@ let silenceBuffer = null;
 let isMuted = true;
 let latencyCompensation = 0;
 let analyserNode = null;
-let headStart_ms = 500; 
+let headStart_ms = 2000; 
 
 export const getAudioContext = () => {
   if (!audioContext) {
