@@ -23,18 +23,22 @@
   width: 100%;
 }
 
-.instrument-button {
-  width: 120px;
-  min-width: 120px;
-  margin-right: 20px;
-  padding: 10px;
+.instrument-button,
+.pattern-controls .mute-button,
+.pattern-controls .solo-button {
   background-color: var(--instrument-button-bg);
-  color: var(--instrument-button-text);
   border: 2px solid var(--instrument-button-border);
-  border-radius: 4px;
   cursor: pointer;
   text-align: left;
   font-size: 16px;
+}
+
+.instrument-button {
+  color: var(--instrument-button-text);
+  width: 120px;
+  min-width: 120px;
+  padding: 10px;
+  border-radius: 4px;
   transition: all 0.3s ease;
 }
 
@@ -70,18 +74,48 @@
   margin-bottom: 10px;
 }
 
-.mute-button,
+.pattern-controls .mute-button {
+  border-color: #ff4136; /* Red outline */
+  color: #ff4136;
+}
+
+.pattern-controls .mute-button.active {
+  background-color: #ff4136;
+  color: white;
+}
+
 .solo-button {
+  border-color: #2ecc40; /* Green outline */
+  color: #2ecc40;
+  margin-right: 20px;
+}
+
+.solo-button.active {
+  background-color: #2ecc40;
+  color: white;
+}
+
+/* Hover effects */
+/* .pattern-controls .mute-button:hover {
+  background-color: #ffdddd;
+}
+
+.pattern-controls .solo-button:hover {
+  background-color: #ddffdd;
+} */
+
+.pattern-controls .mute-button.active:hover,
+.pattern-controls .solo-button.active:hover {
+  opacity: 0.8;
+}
+
+.pattern-controls .mute-button,
+.pattern-controls .solo-button {
   margin-left: 5px;
-  padding: 5px 10px;
-  font-size: 12px;
+  padding: 10px 6px;
+  min-width: 29px;
+  text-align: center;
   border: 1px solid #ccc;
-  background-color: #f0f0f0;
   cursor: pointer;
 }
 
-.mute-button.active,
-.solo-button.active {
-  background-color: #007bff;
-  color: white;
-}
