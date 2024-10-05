@@ -12,7 +12,7 @@ let headStart_ms = 2000;
 export const getAudioContext = () => {
   if (!audioContext) {
     console.log("getAudioContext");
-    const options = {latencyHint: 'playback'};
+    const options = {latencyHint: 'interactive'};
     audioContext = new (window.AudioContext || window.webkitAudioContext)(options);
     clock = new WAAClock(audioContext);
     clock.start();
@@ -108,7 +108,14 @@ export const initLatencyCompensation = () => {
 };
 
 export const scheduleBeat = (soundBuffer, audioTime_s) => {
-  let ctxtime = getAudioContext().currentTime;
+  const ctx = getAudioContext();
+  if (!ctx) {return;}
+  if (ctx.state != 'running') {
+   console.warn("audio context not running");
+    return;
+  }
+
+  let ctxtime = ctx.currentTime;
   //const adjustedTime = audioTime_s + (latencyCompensation / 1000);
   const adjustedTime = audioTime_s;
   
