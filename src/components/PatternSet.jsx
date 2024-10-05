@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
-import { getHeadStart_ms } from '../audioUtils';
 import './PatternSet.css';
 
 const PatternSet = ({ dbName, instruments, beats }) => {

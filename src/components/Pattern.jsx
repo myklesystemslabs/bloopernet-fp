@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import BeatButton from './BeatButton';
-import { loadSound, clearScheduledEvents, playSoundBuffer, getAudioContext, scheduleBeat, getHeadStart_ms } from '../audioUtils';
+import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHeadStart_ms, getMasterGainNode, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
 const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
+  const gainNodeRef = useRef(null);
+  const sourceNodeRef = useRef(null);
   const ts = useTimesync();
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
@@ -18,29 +20,51 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, i
   const bpm = bpmDoc?.bpm || 120;
   const playing = bpmDoc?.playing || false;
 
-  const scheduleBeats = useCallback((nextQuarterBeatStart_ms, scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
-    if (!soundBuffer || !playing || isMuted || (isSolo === false && anyTrackSoloed)) return [];
+  useEffect(() => {
+    const loadInstrumentSound = async () => {
+      const buffer = await loadSound(`/sounds/${instrument.toLowerCase()}.wav`);
+      setSoundBuffer(buffer);
+    };
+    loadInstrumentSound();
+  }, [instrument]);
 
-    const secondsPerQuarterBeat_s = 15 / bpm;
-    const scheduledEvents = [];
+  useEffect(() => {
+    if (!gainNodeRef.current) {
+      const ctx = getAudioContext();
+      gainNodeRef.current = ctx.createGain();
+      gainNodeRef.current.connect(getMasterGainNode());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      const gain = (!isMuted && (isSolo || !anyTrackSoloed)) ? 1 : 0;
+      gainNodeRef.current.gain.setValueAtTime(gain, getAudioContext().currentTime);
+    }
+  }, [isMuted, isSolo, anyTrackSoloed]);
+
+  const scheduleBeats = useCallback((scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
+    if (!soundBuffer || !playing) return [];
+
+    const ctx = getAudioContext();
+    const events = [];
 
     let nextBeatNumber = (startBeatNumber) % patternLength;
     for (let i = 0; i < quarterBeatsToSchedule; i++) {
       if (beats[`beat-${instrument.toLowerCase()}-${nextBeatNumber}`]) {
-        const beatTime_ms = nextQuarterBeatStart_ms + (i * secondsPerQuarterBeat_s * 1000);
-        const audioTime_s = scheduleStart_s + (beatTime_ms - nextQuarterBeatStart_ms) / 1000;
-        
-        // if (instrument === "Kick") {
-        //   console.log("scheduling beat ", nextBeatNumber, " at time ", audioTime_s);
-        // }
-        const event = scheduleBeat(soundBuffer, audioTime_s);
-        scheduledEvents.push(event);
+
+        sourceNodeRef.current = ctx.createBufferSource();
+        sourceNodeRef.current.buffer = soundBuffer;
+        sourceNodeRef.current.connect(gainNodeRef.current);
+
+        const beatTime_s = scheduleStart_s + (i * 15 / bpm);
+        const event = scheduleBeat(sourceNodeRef.current, beatTime_s);
+        if (event) events.push(event);
       }
-      nextBeatNumber = (nextBeatNumber + 1) % patternLength;
     }
 
-    return scheduledEvents;
-  }, [instrument, soundBuffer, beats, bpm, playing, isMuted, isSolo]);
+    return events;
+  }, [instrument, soundBuffer, beats, bpm, playing]);
 
   const scheduleNextQuarterBeat = useCallback(() => {
     if (!soundBuffer || !playing || !ts || timesyncStartTime_ms.current === null) return;
@@ -70,7 +94,6 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, i
     // Only schedule if it's in the future
     if (audioTimeToSchedule_s > currentAudioTime_s) {
       scheduledEventsRef.current = scheduleBeats(
-        timesyncStartTime_ms.current + nextQuarterBeatStart_ms,
         audioTimeToSchedule_s,
         1,
         nextQuarterBeatNumber
@@ -80,18 +103,6 @@ const Pattern = ({ instrument, beats, updateBeat, bpmDoc, elapsedQuarterBeats, i
     }
 
   }, [instrument, soundBuffer, beats, bpm, playing, ts, isMuted, isSolo]);
-  useEffect(() => {
-    const loadInstrumentSound = async () => {
-      try {
-        const buffer = await loadSound(`/sounds/${instrument.toLowerCase()}.wav`);
-        setSoundBuffer(buffer);
-      } catch (error) {
-        console.error(`Failed to load sound for ${instrument}:`, error);
-      }
-    };
-
-    loadInstrumentSound();
-  }, [instrument]);
 
   useEffect(() => {
     if (ts && playing && !wasPlaying) {

@@ -107,7 +107,7 @@ export const initLatencyCompensation = () => {
   latencyCompensation = storedLatency ? parseFloat(storedLatency) : 0;
 };
 
-export const scheduleBeat = (soundBuffer, audioTime_s) => {
+export const scheduleBeat = (sourceNode, audioTime_s) => {
   const ctx = getAudioContext();
   if (!ctx) {return;}
   if (ctx.state != 'running') {
@@ -116,15 +116,11 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
   }
 
   let ctxtime = ctx.currentTime;
-  //const adjustedTime = audioTime_s + (latencyCompensation / 1000);
   const adjustedTime = audioTime_s;
   
   if (adjustedTime > ctxtime) {
-    const source = getAudioContext().createBufferSource();
-    source.buffer = soundBuffer;
-    source.connect(masterGainNode);
     const event = clock.callbackAtTime(() => {
-      source.start();
+      sourceNode.start();
     }, adjustedTime);
     //console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
     return event;
@@ -147,4 +143,8 @@ export const getHeadStart_ms = () => {
 
 export const getHeadStart_s = () => {
   return getHeadStart_ms() / 1000;
+};
+
+export const getMasterGainNode = () => {
+  return masterGainNode;
 };
