@@ -5,7 +5,7 @@ import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHead
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
-const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed, onNameChange }) => {
+const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed, onNameChange, isTemporary, onSubmitNewTrack }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
   const gainNodeRef = useRef(null);
@@ -14,7 +14,8 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
   const timesyncStartTime_ms = useRef(null);
-  const [showInfo, setShowInfo] = useState(false);
+  const [editName, setEditName] = useState(instrument);
+  const [editAudioFile, setEditAudioFile] = useState(audioFile);
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -141,6 +142,20 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
     }
   }, [ts, playing, scheduleNextQuarterBeat, bpm, isMuted, isSolo]);
 
+  useEffect(() => {
+    setEditName(instrument);
+    setEditAudioFile(audioFile);
+  }, [instrument, audioFile]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isTemporary) {
+      onSubmitNewTrack({ id: instrumentId, name: editName, audioFile: editAudioFile });
+    } else {
+      onNameChange(instrumentId, editName);
+    }
+  };
+
   const playSound = () => {
     if (soundBuffer) {
       playSoundBuffer(soundBuffer);
@@ -177,9 +192,11 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
     return groups;
   };
 
+  const [showInfo, setShowInfo] = useState(false);
   const toggleInfo = () => {
     setShowInfo(!showInfo);
   };
+
 
   return (
     <div className="pattern">
@@ -189,13 +206,22 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
         <button className={`mute-button ${isMuted ? 'active' : ''}`} onClick={onMuteToggle}>M</button>
         <button className={`solo-button ${isSolo ? 'active' : ''}`} onClick={onSoloToggle}>S</button>
       </div>
-      {showInfo ? (
-        <InstrumentInfo
-          instrument={instrument}
-          instrumentId={instrumentId}
-          audioFile={audioFile}
-          onNameChange={onNameChange}
-        />
+      {(showInfo || isTemporary) ? (
+        <form onSubmit={handleSubmit}>
+          <input 
+            type="text" 
+            value={editName} 
+            onChange={(e) => setEditName(e.target.value)} 
+            placeholder="Instrument Name"
+          />
+          <input 
+            type="text" 
+            value={editAudioFile} 
+            onChange={(e) => setEditAudioFile(e.target.value)} 
+            placeholder="Audio File URL"
+          />
+          <button type="submit">{isTemporary ? 'Add Track' : 'Update'}</button>
+        </form>
       ) : (
         <div className="beat-buttons">
           {renderBeatButtons()}

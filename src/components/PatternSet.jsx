@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
@@ -6,7 +6,7 @@ import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
 
-const PatternSet = ({ dbName, beats }) => {
+const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId }) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
 
@@ -24,27 +24,22 @@ const PatternSet = ({ dbName, beats }) => {
 
   // Fetch instruments from the database
   const dbInstruments = useLiveQuery('type', { key: 'instrument' });
+  const [instruments, setInstruments] = useState([]);
 
-  // Combine default and database instruments, sort by creation date
-  const instruments = useMemo(() => {
-    const defaultInstruments = DEFAULT_INSTRUMENTS.map(name => ({
-      id: name.toLowerCase(),
-      name,
-      createdAt: new Date(0), // Ensure default instruments appear last
-      audioFile: `/sounds/${name.toLowerCase()}.wav`
-    }));
-
+  useEffect(() => {
     const allInstruments = [
       ...dbInstruments.rows.map(row => ({
         id: row.doc._id,
         name: row.doc.name,
-        createdAt: new Date(row.doc.createdAt),
         audioFile: row.doc.audioFile
       })),
-      ...defaultInstruments
+      ...DEFAULT_INSTRUMENTS.map(name => ({
+        id: name.toLowerCase(),
+        name,
+        audioFile: `/sounds/${name.toLowerCase()}.wav`
+      }))
     ];
-
-    return allInstruments.sort((a, b) => b.createdAt - a.createdAt);
+    setInstruments(allInstruments);
   }, [dbInstruments]);
 
   const calculateElapsedQuarterBeats = useCallback(() => {
@@ -113,6 +108,36 @@ const PatternSet = ({ dbName, beats }) => {
     });
   }, []);
 
+  
+  const handleSubmitNewTrack = useCallback(async (trackData) => {
+    // Validate data
+    if (!trackData.name || !trackData.audioFile) {
+      alert('Please fill out all fields');
+      return;
+    }
+
+    // Check if ID is unique
+    const existingTrack = await database.get(trackData.id).catch(() => null);
+    if (existingTrack) {
+      alert('An instrument with this ID already exists');
+      return;
+    }
+
+    // TODO: Add validation for audio file URL
+
+    // Add to database
+    await database.put({
+      _id: trackData.id,
+      type: 'instrument',
+      name: trackData.name,
+      audioFile: trackData.audioFile,
+      createdAt: new Date().toISOString()
+    });
+
+    // Clear temporary track
+    setTempTrack(null);
+  }, [database, setTempTrack]);
+
   const handleMuteToggle = useCallback((instrumentId) => {
     updateTrackSetting(instrumentId, 'muted', !trackSettings[instrumentId]?.muted);
   }, [trackSettings, updateTrackSetting]);
@@ -136,11 +161,12 @@ const PatternSet = ({ dbName, beats }) => {
         name: newName
       });
     }
-  }, [database, instruments]);
+    setNewInstrumentId(null);
+  }, [database, instruments, setNewInstrumentId]);
 
   return (
     <div className="pattern-set">
-      {instruments.map((instrument) => (
+      {[...instruments, tempTrack].filter(Boolean).map((instrument) => (
         <Pattern
           key={instrument.id}
           instrument={instrument.name}
@@ -156,6 +182,8 @@ const PatternSet = ({ dbName, beats }) => {
           onSoloToggle={() => handleSoloToggle(instrument.id)}
           anyTrackSoloed={anyTrackSoloed}
           onNameChange={handleNameChange}
+          isTemporary={instrument.id === tempTrack?.id}
+          onSubmitNewTrack={handleSubmitNewTrack}
         />
       ))}
     </div>

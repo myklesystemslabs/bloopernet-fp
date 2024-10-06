@@ -4,7 +4,7 @@ import { useFireproof } from 'use-fireproof';
 import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms} from '../audioUtils';
 import './TopControls.css';
 
-const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled }) => {
+const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
@@ -174,6 +174,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
             <button className="control-button visuals-toggle" onClick={toggleVisuals}>
               {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
             </button>
+            <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
           </>
         )}
       </div>

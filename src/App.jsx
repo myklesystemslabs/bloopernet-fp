@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import AudioMotionVisualizer from './components/AudioMotionVisualizer';
 import { getAnalyserNode } from './audioUtils';
@@ -12,6 +12,7 @@ import { TimesyncProvider } from './TimesyncContext';
 import { initLatencyCompensation } from './audioUtils';
 import './App.css';
 import InviteButton from './components/InviteButton';
+import { v4 as uuidv4 } from 'uuid';
 
 const partyCxs = new Map();
 function partykitS3({ name, blockstore }, partyHost, refresh) {
@@ -152,6 +153,34 @@ function App() {
     });
   };
 
+  const [newInstrumentId, setNewInstrumentId] = useState(null);
+
+  const [tempTrack, setTempTrack] = useState(null);
+
+  const addTemporaryTrack = useCallback(() => {
+    const newId = `temp-${uuidv4()}`;
+    setTempTrack({
+      id: newId,
+      name: '',
+      audioFile: ''
+    });
+  }, []);
+
+  const handleAddTrack = useCallback(async () => {
+    const newName = 'New Instrument';
+    const newId = `${newName.toLowerCase()}-${uuidv4()}`;
+    const newInstrument = {
+      _id: newId,
+      type: 'instrument',
+      name: newName,
+      createdAt: new Date().toISOString(),
+      audioFile: '/sounds/default.wav' // You might want to change this to a default sound
+    };
+
+    await database.put(newInstrument);
+    setNewInstrumentId(newId);
+  }, [database]);
+
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
@@ -168,8 +197,17 @@ function App() {
             theme={theme}
             toggleVisuals={toggleVisuals}
             visualsEnabled={visualsEnabled}
+            onAddTrack={addTemporaryTrack}
           />
-          <PatternSet dbName={dbName} instruments={instruments} beats={beats} />
+          <PatternSet 
+            dbName={dbName} 
+            instruments={instruments} 
+            beats={beats} 
+            newInstrumentId={newInstrumentId}
+            setNewInstrumentId={setNewInstrumentId}
+            tempTrack={tempTrack}
+            setTempTrack={setTempTrack}
+          />
 					<AppInfo />
           <InviteButton />
         </div>
