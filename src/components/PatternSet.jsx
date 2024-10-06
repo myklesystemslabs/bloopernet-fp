@@ -164,6 +164,38 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
     setNewInstrumentId(null);
   }, [database, instruments, setNewInstrumentId]);
 
+  const handleDeleteTrack = useCallback(async (instrumentId) => {
+    // Don't allow deletion of default instruments
+    if (DEFAULT_INSTRUMENTS.some(name => name.toLowerCase() === instrumentId)) {
+      alert("Cannot delete default instruments");
+      return;
+    }
+
+    try {
+      // Delete the instrument document
+      await database.del(instrumentId);
+
+      // Delete associated beats
+      const beatDocs = await database.query('type', { 
+        key: 'beat', 
+        filter: doc => doc.instrumentName === instrumentId 
+        // TODO: we have been using instrumentName in the beat records, we should use the full ID
+      });
+      await Promise.all(beatDocs.rows.map(row => database.del(row.id)));
+
+      // Remove from track settings
+      setTrackSettings(prev => {
+        const updated = { ...prev };
+        delete updated[instrumentId];
+        localStorage.setItem('trackSettings', JSON.stringify(updated));
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error deleting track:", error);
+      alert("An error occurred while deleting the track");
+    }
+  }, [database]);
+
   return (
     <div className="pattern-set">
       {[...instruments, tempTrack].filter(Boolean).map((instrument) => (
@@ -184,6 +216,7 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
           onNameChange={handleNameChange}
           isTemporary={instrument.id === tempTrack?.id}
           onSubmitNewTrack={handleSubmitNewTrack}
+          onDeleteTrack={handleDeleteTrack} // New prop
         />
       ))}
     </div>

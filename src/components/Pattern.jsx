@@ -5,7 +5,24 @@ import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHead
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
-const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDoc, elapsedQuarterBeats, isMuted, isSolo, onMuteToggle, onSoloToggle, anyTrackSoloed, onNameChange, isTemporary, onSubmitNewTrack }) => {
+const Pattern = ({ 
+  instrument, 
+  instrumentId, 
+  audioFile, 
+  beats, 
+  updateBeat, 
+  bpmDoc, 
+  elapsedQuarterBeats, 
+  isMuted, 
+  isSolo, 
+  onMuteToggle, 
+  onSoloToggle, 
+  anyTrackSoloed, 
+  onNameChange, 
+  isTemporary, 
+  onSubmitNewTrack,
+  onDeleteTrack // New prop for delete functionality
+}) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
   const gainNodeRef = useRef(null);
@@ -156,6 +173,12 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
     }
   };
 
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete the ${instrument} track?`)) {
+      onDeleteTrack(instrumentId);
+    }
+  };
+
   const playSound = () => {
     if (soundBuffer) {
       playSoundBuffer(soundBuffer);
@@ -207,7 +230,7 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
         <button className={`solo-button ${isSolo ? 'active' : ''}`} onClick={onSoloToggle}>S</button>
       </div>
       {(showInfo || isTemporary) ? (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="edit-form">
           <input 
             type="text" 
             value={editName} 
@@ -221,6 +244,9 @@ const Pattern = ({ instrument, instrumentId, audioFile, beats, updateBeat, bpmDo
             placeholder="Audio File URL"
           />
           <button type="submit">{isTemporary ? 'Add Track' : 'Update'}</button>
+          {!isTemporary && (
+            <button type="button" className="delete-button" onClick={handleDelete}>Delete</button>
+          )}
         </form>
       ) : (
         <div className="beat-buttons">
