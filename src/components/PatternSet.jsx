@@ -66,20 +66,21 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
     }
   }, [playing, calculateElapsedQuarterBeats]);
 
-  const updateBeat = async (id, instrumentName, beatIndex, isActive) => {
-    const doc = await database.get(id).catch(error => {
+  const updateBeat = async (instrumentId, beatIndex, isActive) => {
+    const beatId = `beat-${instrumentId}-${beatIndex}`;
+    const doc = await database.get(beatId).catch(error => {
       if (error.message.includes('Not found')) {
         return {
-          _id: id,
+          _id: beatId,
           type: 'beat',
           isActive: isActive,
-          instrumentName: instrumentName,
+          instrumentId: instrumentId,
           beatIndex: beatIndex
         };
       } else {
         throw error;
       }
-    })
+    });
     await database.put({ ...doc, isActive });
   };
 
@@ -178,8 +179,7 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
       // Delete associated beats
       const beatDocs = await database.query('type', { 
         key: 'beat', 
-        filter: doc => doc.instrumentName === instrumentId 
-        // TODO: we have been using instrumentName in the beat records, we should use the full ID
+        filter: doc => doc._id.startsWith(`beat-${instrumentId}-`)
       });
       await Promise.all(beatDocs.rows.map(row => database.del(row.id)));
 
@@ -196,9 +196,13 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
     }
   }, [database]);
 
+  const handleCancelNewTrack = useCallback(() => {
+    setTempTrack(null);
+  }, [setTempTrack]);
+
   return (
     <div className="pattern-set">
-      {[...instruments, tempTrack].filter(Boolean).map((instrument) => (
+      {[tempTrack, ...instruments].filter(Boolean).map((instrument) => (
         <Pattern
           key={instrument.id}
           instrument={instrument.name}
@@ -216,7 +220,9 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
           onNameChange={handleNameChange}
           isTemporary={instrument.id === tempTrack?.id}
           onSubmitNewTrack={handleSubmitNewTrack}
-          onDeleteTrack={handleDeleteTrack} // New prop
+          onDeleteTrack={handleDeleteTrack}
+          onCancelNewTrack={handleCancelNewTrack}
+          isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrument.name)} // New prop
         />
       ))}
     </div>

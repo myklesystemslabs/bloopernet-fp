@@ -21,7 +21,9 @@ const Pattern = ({
   onNameChange, 
   isTemporary, 
   onSubmitNewTrack,
-  onDeleteTrack // New prop for delete functionality
+  onDeleteTrack,
+  onCancelNewTrack,
+  isDefaultInstrument // New prop
 }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
@@ -71,7 +73,7 @@ const Pattern = ({
 
     let nextBeatNumber = (startBeatNumber) % patternLength;
     for (let i = 0; i < quarterBeatsToSchedule; i++) {
-      if (beats[`beat-${instrument.toLowerCase()}-${nextBeatNumber}`]) {
+      if (beats[`beat-${instrumentId}-${nextBeatNumber}`]) {
 
         sourceNodeRef.current = ctx.createBufferSource();
         sourceNodeRef.current.buffer = soundBuffer;
@@ -135,7 +137,7 @@ const Pattern = ({
       // console.log("timesyncStartTime secs: ", timesyncStartTime_ms.current / 1000);
 
       // // Play the first beat immediately
-      // if (soundBuffer && beats[`beat-${instrument.toLowerCase()}-0`]) {
+      // if (soundBuffer && beats[`beat-${instrumentId}-0`]) {
       //   playSoundBuffer(soundBuffer);
       // }
 
@@ -148,7 +150,6 @@ const Pattern = ({
       scheduledEventsRef.current = [];
       setWasPlaying(false);
     }
-  //}, [playing, ts, soundBuffer, beats, instrument, scheduleNextQuarterBeat]);
   }, [playing, ts, soundBuffer, beats, instrument, isMuted, isSolo]);
 
   useEffect(() => {
@@ -170,6 +171,14 @@ const Pattern = ({
       onSubmitNewTrack({ id: instrumentId, name: editName, audioFile: editAudioFile });
     } else {
       onNameChange(instrumentId, editName);
+    }
+  };
+
+  const handleCancel = () => {
+    if (isTemporary) {
+      onCancelNewTrack();
+    } else {
+      setShowInfo(false);
     }
   };
 
@@ -195,10 +204,10 @@ const Pattern = ({
         const index = i * 4 + j;
         groupButtons.push(
           <BeatButton 
-            key={`${instrument}-${index}`}
-            instrumentName={instrument} 
+            key={`${instrumentId}-${index}`}
+            instrumentId={instrumentId}
             beatIndex={index} 
-            isActive={beats[`beat-${instrument.toLowerCase()}-${index}`] || false}
+            isActive={beats[`beat-${instrumentId}-${index}`] || false}
             isCurrent={playing && index === currentQuarterBeat}
             isStarting={elapsedQuarterBeats < 0 && playing}
             updateBeat={updateBeat}
@@ -220,7 +229,6 @@ const Pattern = ({
     setShowInfo(!showInfo);
   };
 
-
   return (
     <div className="pattern">
       <div className="pattern-controls">
@@ -236,6 +244,7 @@ const Pattern = ({
             value={editName} 
             onChange={(e) => setEditName(e.target.value)} 
             placeholder="Instrument Name"
+            disabled={isDefaultInstrument} // Disable name editing for default instruments
           />
           <input 
             type="text" 
@@ -244,7 +253,10 @@ const Pattern = ({
             placeholder="Audio File URL"
           />
           <button type="submit">{isTemporary ? 'Add Track' : 'Update'}</button>
-          {!isTemporary && (
+          {(isTemporary) && (
+            <button type="button" className="cancel-button" onClick={handleCancel}>Cancel</button>
+          )}
+          {!isTemporary && !isDefaultInstrument && (
             <button type="button" className="delete-button" onClick={handleDelete}>Delete</button>
           )}
         </form>

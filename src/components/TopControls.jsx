@@ -147,6 +147,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
           {muted ? 'Unmute' : 'Mute'}
         </button>
+        <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
         {isExpert && (
           <>
             <button className="control-button play-pause-button" onClick={togglePlay}>
@@ -174,7 +175,6 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
             <button className="control-button visuals-toggle" onClick={toggleVisuals}>
               {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
             </button>
-            <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
           </>
         )}
       </div>

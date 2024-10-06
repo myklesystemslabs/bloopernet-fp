@@ -186,3 +186,12 @@
 .edit-form button:hover {
   opacity: 0.8;
 }
+
+.edit-form button[type="button"] {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.edit-form button[type="button"]:hover {
+  background-color: #e0e0e0;
+}
