@@ -19,11 +19,8 @@ const Pattern = ({
   onSoloToggle, 
   anyTrackSoloed, 
   onNameChange, 
-  isTemporary, 
-  onSubmitNewTrack,
   onDeleteTrack,
-  onCancelNewTrack,
-  isDefaultInstrument // New prop
+  isDefaultInstrument
 }) => {
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
@@ -33,6 +30,7 @@ const Pattern = ({
   const patternLength = 16; // 16 quarter beats = 4 full beats
   const scheduledEventsRef = useRef([]);
   const timesyncStartTime_ms = useRef(null);
+  const [showInfo, setShowInfo] = useState(false);
   const [editName, setEditName] = useState(instrument);
   const [editAudioFile, setEditAudioFile] = useState(audioFile);
 
@@ -167,25 +165,14 @@ const Pattern = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isTemporary) {
-      onSubmitNewTrack({ id: instrumentId, name: editName, audioFile: editAudioFile });
-    } else {
-      onNameChange(instrumentId, editName);
-    }
+    onNameChange(instrumentId, editName);
+    setShowInfo(false);
   };
 
   const handleCancel = () => {
-    if (isTemporary) {
-      onCancelNewTrack();
-    } else {
-      setShowInfo(false);
-    }
-  };
-
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete the ${instrument} track?`)) {
-      onDeleteTrack(instrumentId);
-    }
+    setShowInfo(false);
+    setEditName(instrument);
+    setEditAudioFile(audioFile);
   };
 
   const playSound = () => {
@@ -224,27 +211,22 @@ const Pattern = ({
     return groups;
   };
 
-  const [showInfo, setShowInfo] = useState(false);
-  const toggleInfo = () => {
-    setShowInfo(!showInfo);
-  };
-
   return (
     <div className="pattern">
       <div className="pattern-controls">
-        <button className={`info-button ${showInfo ? 'active' : ''}`} onClick={toggleInfo}>ⓘ</button>
+        <button className={`info-button ${showInfo ? 'active' : ''}`} onClick={() => setShowInfo(!showInfo)}>ⓘ</button>
         <button className="instrument-button" onClick={playSound}>{instrument}</button>
         <button className={`mute-button ${isMuted ? 'active' : ''}`} onClick={onMuteToggle}>M</button>
         <button className={`solo-button ${isSolo ? 'active' : ''}`} onClick={onSoloToggle}>S</button>
       </div>
-      {(showInfo || isTemporary) ? (
+      {showInfo ? (
         <form onSubmit={handleSubmit} className="edit-form">
           <input 
             type="text" 
             value={editName} 
             onChange={(e) => setEditName(e.target.value)} 
             placeholder="Instrument Name"
-            disabled={isDefaultInstrument} // Disable name editing for default instruments
+            disabled={isDefaultInstrument}
           />
           <input 
             type="text" 
@@ -252,12 +234,10 @@ const Pattern = ({
             onChange={(e) => setEditAudioFile(e.target.value)} 
             placeholder="Audio File URL"
           />
-          <button type="submit">{isTemporary ? 'Add Track' : 'Update'}</button>
-          {(isTemporary) && (
-            <button type="button" className="cancel-button" onClick={handleCancel}>Cancel</button>
-          )}
-          {!isTemporary && !isDefaultInstrument && (
-            <button type="button" className="delete-button" onClick={handleDelete}>Delete</button>
+          <button type="submit">Update</button>
+          <button type="button" onClick={handleCancel}>Cancel</button>
+          {!isDefaultInstrument && (
+            <button type="button" className="delete-button" onClick={() => onDeleteTrack(instrumentId)}>Delete</button>
           )}
         </form>
       ) : (

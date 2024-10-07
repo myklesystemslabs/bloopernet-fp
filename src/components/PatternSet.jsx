@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
+import NewTrackForm from './NewTrackForm';
+import { v4 as uuidv4 } from 'uuid';
 import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
 
-const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId }) => {
+const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewInstrumentId }) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
+  const { database, useLiveQuery } = useFireproof(dbName);
+  const [trackSettings, setTrackSettings] = useState({});
 
   // Fetch the BPM document from the database
-  const { database, useLiveQuery } = useFireproof(dbName);
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
   
@@ -87,7 +90,6 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
 
   //////////////////////////////////////////////////////////////////////////////
   // Manage track settings in local storage
-  const [trackSettings, setTrackSettings] = useState({});
 
   useEffect(() => {
     // Load track settings from local storage
@@ -110,15 +112,17 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
   }, []);
 
   
-  const handleSubmitNewTrack = useCallback(async (trackData) => {
-    // Validate data
-    if (!trackData.name || !trackData.audioFile) {
+  const handleSubmitNewTrack = useCallback(async (newTrack) => {
+  const newId = `${newTrack.name.toLowerCase()}-${uuidv4()}`;
+
+      // Validate data
+      if (!newTrack.name || !newTrack.audioFile) {
       alert('Please fill out all fields');
       return;
     }
 
     // Check if ID is unique
-    const existingTrack = await database.get(trackData.id).catch(() => null);
+    const existingTrack = await database.get(newId).catch(() => null);
     if (existingTrack) {
       alert('An instrument with this ID already exists');
       return;
@@ -128,16 +132,14 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
 
     // Add to database
     await database.put({
-      _id: trackData.id,
+      _id: newId,
       type: 'instrument',
-      name: trackData.name,
-      audioFile: trackData.audioFile,
+      name: newTrack.name,
+      audioFile: newTrack.audioFile,
       createdAt: new Date().toISOString()
     });
-
-    // Clear temporary track
-    setTempTrack(null);
-  }, [database, setTempTrack]);
+    onCancelNewTrack(); // Close the form after submitting
+  }, [database, onCancelNewTrack]);
 
   const handleMuteToggle = useCallback((instrumentId) => {
     updateTrackSetting(instrumentId, 'muted', !trackSettings[instrumentId]?.muted);
@@ -197,12 +199,22 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
   }, [database]);
 
   const handleCancelNewTrack = useCallback(() => {
-    setTempTrack(null);
-  }, [setTempTrack]);
+    onCancelNewTrack();
+  }, []);
+
+  const handleAddTrack = useCallback(() => {
+    setShowNewTrackForm(true);
+  }, []);
 
   return (
     <div className="pattern-set">
-      {[tempTrack, ...instruments].filter(Boolean).map((instrument) => (
+      {showNewTrackForm && (
+        <NewTrackForm
+          onSubmit={handleSubmitNewTrack}
+          onCancel={handleCancelNewTrack}
+        />
+      )}
+      {instruments.map((instrument) => (
         <Pattern
           key={instrument.id}
           instrument={instrument.name}
@@ -218,11 +230,8 @@ const PatternSet = ({ dbName, beats, tempTrack, setTempTrack, setNewInstrumentId
           onSoloToggle={() => handleSoloToggle(instrument.id)}
           anyTrackSoloed={anyTrackSoloed}
           onNameChange={handleNameChange}
-          isTemporary={instrument.id === tempTrack?.id}
-          onSubmitNewTrack={handleSubmitNewTrack}
           onDeleteTrack={handleDeleteTrack}
-          onCancelNewTrack={handleCancelNewTrack}
-          isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrument.name)} // New prop
+          isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrument.name)}
         />
       ))}
     </div>

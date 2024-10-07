@@ -1,0 +1,65 @@
+.new-track-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background-color: var(--beat-group-odd);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.new-track-form input {
+  padding: 10px;
+  border: 2px solid var(--button-border);
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.new-track-form input::placeholder {
+  color: var(--button-text);
+  opacity: 0.7;
+}
+
+.new-track-form button {
+  padding: 10px 20px;
+  border: 2px solid var(--button-border);
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.new-track-form button[type="submit"] {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.new-track-form button[type="submit"]:hover {
+  background-color: var(--button-hover);
+}
+
+.new-track-form button[type="button"] {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.new-track-form button[type="button"]:hover {
+  background-color: var(--button-hover);
+}
+
+@media (min-width: 768px) {
+  .new-track-form {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .new-track-form input {
+    flex: 1;
+  }
+
+  .new-track-form button {
+    flex: 0 0 auto;
+  }
+}

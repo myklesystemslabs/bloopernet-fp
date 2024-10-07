@@ -166,20 +166,30 @@ function App() {
     });
   }, []);
 
-  const handleAddTrack = useCallback(async () => {
-    const newName = 'New Instrument';
-    const newId = `${newName.toLowerCase()}-${uuidv4()}`;
-    const newInstrument = {
-      _id: newId,
-      type: 'instrument',
-      name: newName,
-      createdAt: new Date().toISOString(),
-      audioFile: '/sounds/default.wav' // You might want to change this to a default sound
-    };
+  // const handleAddTrack = useCallback(async () => {
+  //   const newName = 'New Instrument';
+  //   const newId = `${newName.toLowerCase()}-${uuidv4()}`;
+  //   const newInstrument = {
+  //     _id: newId,
+  //     type: 'instrument',
+  //     name: newName,
+  //     createdAt: new Date().toISOString(),
+  //     audioFile: '/sounds/default.wav' // You might want to change this to a default sound
+  //   };
 
-    await database.put(newInstrument);
-    setNewInstrumentId(newId);
-  }, [database]);
+  //   await database.put(newInstrument);
+  //   setNewInstrumentId(newId);
+  // }, [database]);
+
+  const [showNewTrackForm, setShowNewTrackForm] = useState(false);
+
+  const handleAddTrack = () => {
+    setShowNewTrackForm(true);
+  };
+
+  const handleCancelNewTrack = () => {
+    setShowNewTrackForm(false);
+  };
 
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
@@ -197,7 +207,7 @@ function App() {
             theme={theme}
             toggleVisuals={toggleVisuals}
             visualsEnabled={visualsEnabled}
-            onAddTrack={addTemporaryTrack}
+            onAddTrack={handleAddTrack}
           />
           <PatternSet 
             dbName={dbName} 
@@ -207,6 +217,8 @@ function App() {
             setNewInstrumentId={setNewInstrumentId}
             tempTrack={tempTrack}
             setTempTrack={setTempTrack}
+            showNewTrackForm={showNewTrackForm}
+            onCancelNewTrack={handleCancelNewTrack}
           />
 					<AppInfo />
           <InviteButton />
