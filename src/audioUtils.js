@@ -80,8 +80,18 @@ export const setMasterMute = async (mute) => {
 
 export const isMasterMuted = () => isMuted;
 
-export const loadSound = async (url) => {
-  const response = await fetch(url);
+export const loadSound = async (source) => {
+  // const audioContext = getAudioContext();
+  let response;
+  if (typeof source === 'string') {
+    // It's a URL
+    response = await fetch(source);
+  } else if (source instanceof Blob) {
+    // It's a Blob (for database-stored files)
+    response = new Response(source);
+  } else {
+    throw new Error('Invalid audio source');
+  }
   const arrayBuffer = await response.arrayBuffer();
   return await getAudioContext().decodeAudioData(arrayBuffer);
 };

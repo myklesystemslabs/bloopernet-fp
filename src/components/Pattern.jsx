@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useFireproof } from 'use-fireproof';
 import BeatButton from './BeatButton';
 import InstrumentInfo from './InstrumentInfo';
 import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHeadStart_ms, getMasterGainNode, playSoundBuffer } from '../audioUtils';
@@ -6,9 +7,7 @@ import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
 const Pattern = ({ 
-  instrument, 
-  instrumentId, 
-  audioFile, 
+  instrumentRecord, 
   beats, 
   updateBeat, 
   bpmDoc, 
@@ -20,8 +19,12 @@ const Pattern = ({
   anyTrackSoloed, 
   onNameChange, 
   onDeleteTrack,
-  isDefaultInstrument
+  isDefaultInstrument,
+  dbName
 }) => {
+  const { database } = useFireproof(dbName);
+  const [audioBuffer, setAudioBuffer] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [soundBuffer, setSoundBuffer] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
   const gainNodeRef = useRef(null);
@@ -31,8 +34,16 @@ const Pattern = ({
   const scheduledEventsRef = useRef([]);
   const timesyncStartTime_ms = useRef(null);
   const [showInfo, setShowInfo] = useState(false);
-  const [editName, setEditName] = useState(instrument);
-  const [editAudioFile, setEditAudioFile] = useState(audioFile);
+  const [editName, setEditName] = useState(instrumentRecord.name);
+  const [editAudioFile, setEditAudioFile] = useState(instrumentRecord.audioFile);
+
+  const {
+    _id: instrumentId,
+    name: instrument,
+    audioFile,
+    mimeType,
+    referenceType
+  } = instrumentRecord;
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -41,12 +52,37 @@ const Pattern = ({
   const playing = bpmDoc?.playing || false;
 
   useEffect(() => {
-    const loadInstrumentSound = async () => {
-      const buffer = await loadSound(audioFile);
-      setSoundBuffer(buffer);
+    const loadAudio = async () => {
+      setIsLoading(true);
+      try {
+        let audioData;
+        if (referenceType === 'url') {
+          audioData = audioFile;
+        } else if (referenceType === 'database') {
+          const fileName = Object.keys(instrumentRecord._files)[0];
+          const file = await instrumentRecord._files[fileName].file();
+          audioData = URL.createObjectURL(file);
+        }
+        const buffer = await loadSound(audioData);
+        //setAudioBuffer(buffer);
+        setSoundBuffer(buffer);
+      } catch (error) {
+        console.error('Error loading audio:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    loadInstrumentSound();
-  }, [audioFile]);
+
+    loadAudio();
+  }, [instrumentRecord, referenceType, audioFile]);
+
+  // useEffect(() => {
+  //   const loadInstrumentSound = async () => {
+  //     const buffer = await loadSound(audioFile);
+  //     setSoundBuffer(buffer);
+  //   };
+  //   loadInstrumentSound();
+  // }, [audioFile]);
 
   useEffect(() => {
     if (!gainNodeRef.current) {
@@ -245,6 +281,7 @@ const Pattern = ({
           {renderBeatButtons()}
         </div>
       )}
+      {isLoading && <div>Loading audio...</div>}
     </div>
   );
 };

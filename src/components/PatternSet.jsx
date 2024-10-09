@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
@@ -8,7 +8,7 @@ import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
 
-const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewInstrumentId }) => {
+const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
   const { database, useLiveQuery } = useFireproof(dbName);
@@ -24,26 +24,34 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewI
   const playing = bpmDoc?.playing || false;
   const prevQuarterBeats = bpmDoc?.prevQuarterBeats || 0;
 
+  // Query for all instrument documents
+  const instrumentDocs = useLiveQuery('type', { key: 'instrument' });
 
-  // Fetch instruments from the database
-  const dbInstruments = useLiveQuery('type', { key: 'instrument' });
-  const [instruments, setInstruments] = useState([]);
+  // Create a map of instrument records with defaults for missing data
+  const instrumentRecords = useMemo(() => {
+    const records = {};
+    instrumentDocs.rows.forEach(row => {
+      records[row.id] = row.doc;
+    });
 
-  useEffect(() => {
-    const allInstruments = [
-      ...dbInstruments.rows.map(row => ({
-        id: row.doc._id,
-        name: row.doc.name,
-        audioFile: row.doc.audioFile
-      })),
-      ...DEFAULT_INSTRUMENTS.map(name => ({
-        id: name.toLowerCase(),
-        name,
-        audioFile: `/sounds/${name.toLowerCase()}.wav`
-      }))
-    ];
-    setInstruments(allInstruments);
-  }, [dbInstruments]);
+    // Add default records for missing default instruments
+    DEFAULT_INSTRUMENTS.forEach(instrument => {
+      const id = instrument.toLowerCase();
+      if (!records[id]) {
+        records[id] = {
+          _id: id,
+          type: 'instrument',
+          name: instrument,
+          audioFile: `/samples/${id}.wav`,
+          mimeType: 'audio/wav',
+          referenceType: 'url',
+          createdAt: ts ? ts.now() : Date.now()
+        };
+      }
+    });
+
+    return records;
+  }, [instrumentDocs, ts]);
 
   const calculateElapsedQuarterBeats = useCallback(() => {
     if (!ts){console.warn("no timesync"); return 0;}
@@ -114,15 +122,24 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewI
   
   const handleSubmitNewTrack = useCallback(async (newTrack) => {
     const newId = `${newTrack.name.toLowerCase()}-${uuidv4()}`;
-    await database.put({
+    const doc = {
       _id: newId,
       type: 'instrument',
       name: newTrack.name,
-      audioFile: newTrack.audioData,
       mimeType: newTrack.mimeType,
       referenceType: newTrack.referenceType,
-      createdAt: ts.now() // Use timesync instead of Date
-    });
+      createdAt: ts.now()
+    };
+
+    if (newTrack.referenceType === 'url') {
+      doc.audioFile = newTrack.audioData;
+    } else if (newTrack.referenceType === 'database') {
+      doc._files = {
+        [`${newId}.${newTrack.mimeType.split('/')[1]}`]: newTrack.audioData
+      };
+    }
+
+    await database.put(doc);
     onCancelNewTrack(); // Close the form after submitting
   }, [database, onCancelNewTrack, ts]);
 
@@ -137,7 +154,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewI
   const anyTrackSoloed = Object.values(trackSettings).some(track => track.soloed);
 
   const handleNameChange = useCallback(async (instrumentId, newName) => {
-    const instrument = instruments.find(i => i.id === instrumentId);
+    const instrument = Object.values(instrumentRecords).find(i => i._id === instrumentId);
     if (instrument) {
       if (DEFAULT_INSTRUMENTS.includes(instrument.name)) {
         console.warn("Cannot rename default instruments");
@@ -149,8 +166,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewI
         name: newName
       });
     }
-    setNewInstrumentId(null);
-  }, [database, instruments, setNewInstrumentId]);
+  }, [database, instrumentRecords]);
 
   const handleDeleteTrack = useCallback(async (instrumentId) => {
     // Don't allow deletion of default instruments
@@ -199,24 +215,23 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewI
           onCancel={handleCancelNewTrack}
         />
       )}
-      {instruments.map((instrument) => (
+      {Object.values(instrumentRecords).map((instrumentRecord) => (
         <Pattern
-          key={instrument.id}
-          instrument={instrument.name}
-          instrumentId={instrument.id}
-          audioFile={instrument.audioFile}
+          key={instrumentRecord._id}
+          instrumentRecord={instrumentRecord}
           beats={beats}
           updateBeat={updateBeat}
           bpmDoc={bpmDoc}
           elapsedQuarterBeats={elapsedQuarterBeats}
-          isMuted={trackSettings[instrument.id]?.muted || false}
-          isSolo={trackSettings[instrument.id]?.soloed || false}
-          onMuteToggle={() => handleMuteToggle(instrument.id)}
-          onSoloToggle={() => handleSoloToggle(instrument.id)}
+          isMuted={trackSettings[instrumentRecord._id]?.muted || false}
+          isSolo={trackSettings[instrumentRecord._id]?.soloed || false}
+          onMuteToggle={() => handleMuteToggle(instrumentRecord._id)}
+          onSoloToggle={() => handleSoloToggle(instrumentRecord._id)}
           anyTrackSoloed={anyTrackSoloed}
           onNameChange={handleNameChange}
           onDeleteTrack={handleDeleteTrack}
-          isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrument.name)}
+          isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrumentRecord.name)}
+          dbName={dbName}
         />
       ))}
     </div>
