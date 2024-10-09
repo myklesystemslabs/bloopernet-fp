@@ -218,7 +218,12 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
       {Object.values(instrumentRecords).map((instrumentRecord) => (
         <Pattern
           key={instrumentRecord._id}
-          instrumentRecord={instrumentRecord}
+          instrumentId={instrumentRecord._id}
+          instrument={instrumentRecord.name}
+          audioFile={instrumentRecord.audioFile}
+          mimeType={instrumentRecord.mimeType}
+          referenceType={instrumentRecord.referenceType}
+          _files={instrumentRecord._files}
           beats={beats}
           updateBeat={updateBeat}
           bpmDoc={bpmDoc}

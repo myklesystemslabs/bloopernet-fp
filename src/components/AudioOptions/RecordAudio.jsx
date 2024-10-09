@@ -17,9 +17,11 @@ const RecordAudio = ({ onDataChange }) => {
 
     mediaRecorderRef.current.onstop = () => {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const fileName = `recording-${Date.now()}.wav`;
+      const audioFile = new File([audioBlob], fileName, { type: 'audio/wav' });
+      const audioUrl = URL.createObjectURL(audioFile);
       setAudioURL(audioUrl);
-      onDataChange(audioBlob);
+      onDataChange(audioFile, 'audio/wav', 'database');
     };
 
     mediaRecorderRef.current.start();

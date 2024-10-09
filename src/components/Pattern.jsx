@@ -7,7 +7,12 @@ import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 
 const Pattern = ({ 
-  instrumentRecord, 
+  instrumentId,
+  instrument,
+  audioFile,
+  mimeType,
+  referenceType,
+  _files,
   beats, 
   updateBeat, 
   bpmDoc, 
@@ -34,16 +39,8 @@ const Pattern = ({
   const scheduledEventsRef = useRef([]);
   const timesyncStartTime_ms = useRef(null);
   const [showInfo, setShowInfo] = useState(false);
-  const [editName, setEditName] = useState(instrumentRecord.name);
-  const [editAudioFile, setEditAudioFile] = useState(instrumentRecord.audioFile);
-
-  const {
-    _id: instrumentId,
-    name: instrument,
-    audioFile,
-    mimeType,
-    referenceType
-  } = instrumentRecord;
+  const [editName, setEditName] = useState(instrument);
+  const [editAudioFile, setEditAudioFile] = useState(audioFile);
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -59,12 +56,11 @@ const Pattern = ({
         if (referenceType === 'url') {
           audioData = audioFile;
         } else if (referenceType === 'database') {
-          const fileName = Object.keys(instrumentRecord._files)[0];
-          const file = await instrumentRecord._files[fileName].file();
+          const fileName = Object.keys(_files)[0];
+          const file = await _files[fileName].file();
           audioData = URL.createObjectURL(file);
         }
         const buffer = await loadSound(audioData);
-        //setAudioBuffer(buffer);
         setSoundBuffer(buffer);
       } catch (error) {
         console.error('Error loading audio:', error);
@@ -74,15 +70,7 @@ const Pattern = ({
     };
 
     loadAudio();
-  }, [instrumentRecord, referenceType, audioFile]);
-
-  // useEffect(() => {
-  //   const loadInstrumentSound = async () => {
-  //     const buffer = await loadSound(audioFile);
-  //     setSoundBuffer(buffer);
-  //   };
-  //   loadInstrumentSound();
-  // }, [audioFile]);
+  }, [referenceType, audioFile, _files]);
 
   useEffect(() => {
     if (!gainNodeRef.current) {
