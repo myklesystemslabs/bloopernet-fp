@@ -42,7 +42,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           _id: id,
           type: 'instrument',
           name: instrument,
-          audioFile: `/samples/${id}.wav`,
+          audioFile: `/public/sounds/${id}.wav`,
           mimeType: 'audio/wav',
           referenceType: 'url',
           createdAt: ts ? ts.now() : Date.now()
