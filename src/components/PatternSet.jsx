@@ -113,33 +113,18 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, setNewI
 
   
   const handleSubmitNewTrack = useCallback(async (newTrack) => {
-  const newId = `${newTrack.name.toLowerCase()}-${uuidv4()}`;
-
-      // Validate data
-      if (!newTrack.name || !newTrack.audioFile) {
-      alert('Please fill out all fields');
-      return;
-    }
-
-    // Check if ID is unique
-    const existingTrack = await database.get(newId).catch(() => null);
-    if (existingTrack) {
-      alert('An instrument with this ID already exists');
-      return;
-    }
-
-    // TODO: Add validation for audio file URL
-
-    // Add to database
+    const newId = `${newTrack.name.toLowerCase()}-${uuidv4()}`;
     await database.put({
       _id: newId,
       type: 'instrument',
       name: newTrack.name,
-      audioFile: newTrack.audioFile,
-      createdAt: new Date().toISOString()
+      audioFile: newTrack.audioData,
+      mimeType: newTrack.mimeType,
+      referenceType: newTrack.referenceType,
+      createdAt: ts.now() // Use timesync instead of Date
     });
     onCancelNewTrack(); // Close the form after submitting
-  }, [database, onCancelNewTrack]);
+  }, [database, onCancelNewTrack, ts]);
 
   const handleMuteToggle = useCallback((instrumentId) => {
     updateTrackSetting(instrumentId, 'muted', !trackSettings[instrumentId]?.muted);
