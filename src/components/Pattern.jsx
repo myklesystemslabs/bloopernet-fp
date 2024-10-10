@@ -242,13 +242,13 @@ const Pattern = ({
   return (
     <div className={`pattern ${isSilent ? 'silent' : ''}`}>
       <div className="pattern-controls">
-        <button 
+        {/* <button 
           className={`info-button ${showInfo ? 'active' : ''}`} 
           onClick={() => setShowInfo(!showInfo)}
           aria-label="Information"
         >
           <span className="material-icons">info</span>
-        </button>
+        </button> */}
         <button className="instrument-button" onClick={playSound}>{instrument}</button>
         <button 
           className={`mute-button ${isMuted ? 'active' : ''}`} 
