@@ -62,3 +62,11 @@
 .beat-button.active::after {
   background-color: var(--beat-active) !important;
 }
+
+.beat-button.silent {
+  opacity: 0.5;
+}
+
+.beat-button.silent.active {
+  background-color: #999; /* A gray color for active but silent buttons */
+}

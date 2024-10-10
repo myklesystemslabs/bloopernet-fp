@@ -25,7 +25,8 @@ const Pattern = ({
   onNameChange, 
   onDeleteTrack,
   isDefaultInstrument,
-  dbName
+  dbName,
+  masterMuted // Add this line
 }) => {
   const { database } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -207,6 +208,8 @@ const Pattern = ({
     }
   };
 
+  const isSilent = masterMuted || isMuted || (anyTrackSoloed && !isSolo);
+
   const renderBeatButtons = () => {
     const groups = [];
     for (let i = 0; i < 4; i++) {
@@ -223,6 +226,7 @@ const Pattern = ({
             isStarting={elapsedQuarterBeats < 0 && playing}
             updateBeat={updateBeat}
             className={`beat-group-${i}`}
+            isSilent={isSilent}
           />
         );
       }
@@ -236,7 +240,7 @@ const Pattern = ({
   };
 
   return (
-    <div className="pattern">
+    <div className={`pattern ${isSilent ? 'silent' : ''}`}>
       <div className="pattern-controls">
         <button 
           className={`info-button ${showInfo ? 'active' : ''}`} 

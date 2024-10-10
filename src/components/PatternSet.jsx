@@ -4,6 +4,7 @@ import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
 import NewTrackForm from './NewTrackForm';
 import { v4 as uuidv4 } from 'uuid';
+import { isMasterMuted } from '../audioUtils'; // Add this import
 import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -13,6 +14,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
   const { database, useLiveQuery } = useFireproof(dbName);
   const [trackSettings, setTrackSettings] = useState({});
+  const [masterMuted, setMasterMuted] = useState(isMasterMuted());
 
   // Fetch the BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
@@ -230,6 +232,21 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
     });
   }, [instrumentRecords]);
 
+  useEffect(() => {
+    const checkMasterMute = () => {
+      setMasterMuted(isMasterMuted());
+    };
+
+    // Check initially
+    checkMasterMute();
+
+    // Set up an interval to check periodically
+    const intervalId = setInterval(checkMasterMute, 100); // Check every 100ms
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="pattern-set">
       {showNewTrackForm && (
@@ -254,10 +271,10 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           elapsedQuarterBeats={elapsedQuarterBeats}
           isMuted={trackSettings[instrumentRecord._id]?.muted || false}
           isSolo={trackSettings[instrumentRecord._id]?.soloed || false}
+          anyTrackSoloed={anyTrackSoloed}
+          masterMuted={masterMuted} // Use the state here
           onMuteToggle={() => handleMuteToggle(instrumentRecord._id)}
           onSoloToggle={() => handleSoloToggle(instrumentRecord._id)}
-          anyTrackSoloed={anyTrackSoloed}
-          onNameChange={handleNameChange}
           onDeleteTrack={handleDeleteTrack}
           isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrumentRecord.name)}
           dbName={dbName}

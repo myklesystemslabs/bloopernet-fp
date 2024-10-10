@@ -5,6 +5,14 @@
   --instrument-button-text: #dd35ff;
   --instrument-button-border: #FF8C42;
   --instrument-button-hover: #FFF5EC;
+  
+  /* Grayscale versions */
+  --beat-group-odd-gray: #e6e6e6;
+  --beat-group-even-gray: #d9d9d9;
+  --instrument-button-bg-gray: #f2f2f2;
+  --instrument-button-text-gray: #999999;
+  --instrument-button-border-gray: #cccccc;
+  --instrument-button-hover-gray: #e6e6e6;
 }
 
 [data-theme="dark"] {
@@ -14,6 +22,14 @@
   --instrument-button-text: #FFA500;
   --instrument-button-border: #FF8C42;
   --instrument-button-hover: #4A3A2E;
+  
+  /* Grayscale versions for dark theme */
+  --beat-group-odd-gray: #2e2e2e;
+  --beat-group-even-gray: #262626;
+  --instrument-button-bg-gray: #3d3d3d;
+  --instrument-button-text-gray: #808080;
+  --instrument-button-border-gray: #666666;
+  --instrument-button-hover-gray: #4d4d4d;
 }
 
 .pattern {
@@ -204,3 +220,23 @@
 .edit-form button[type="button"]:hover {
   background-color: #e0e0e0;
 }
+
+.pattern.silent .beat-group:nth-child(odd) {
+  background-color: var(--beat-group-odd-gray);
+}
+
+.pattern.silent .beat-group:nth-child(even) {
+  background-color: var(--beat-group-even-gray);
+}
+
+.pattern.silent .instrument-button {
+  background-color: var(--instrument-button-bg-gray);
+  color: var(--instrument-button-text-gray);
+  border-color: var(--instrument-button-border-gray);
+}
+
+.pattern.silent .instrument-button:hover {
+  background-color: var(--instrument-button-hover-gray);
+}
+
+/* Add similar styles for other elements that need to be desaturated */
