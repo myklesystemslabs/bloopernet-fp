@@ -1,11 +1,47 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const RecordAudio = ({ onDataChange, onCancel }) => {
+const ONOMATOPOEIC_WORDS = [
+  // ... (insert the list of words here)
+  "Beep", "Boing", "Buzz", "Chirp", "Clang", "Click", "Clink", "Ding", "Drip", "Fizz",
+  "Honk", "Hum", "Ping", "Pop", "Quack", "Rattle", "Roar", "Sizzle", "Splash", "Squeak",
+  "Thud", "Tick", "Vroom", "Whir", "Whoosh", "Zap", "Zoom", "Bam", "Bang", "Bark",
+  "Boom", "Clap", "Crackle", "Crash", "Crunch", "Gurgle", "Hiccup", "Hiss", "Howl", "Knock",
+  "Meow", "Moo", "Mumble", "Munch", "Murmur", "Pitter", "Patter", "Purr", "Rustle", "Screech",
+  "Slurp", "Snap", "Sniff", "Snore", "Squish", "Swish", "Thump", "Tinkle", "Twang", "Whizz",
+  "Wobble", "Yawn", "Zing", "Bonk", "Burp", "Chime", "Clatter", "Clip", "Clop", "Flick",
+  "Flutter", "Giggle", "Jingle", "Plop", "Plunk", "Poof", "Pow", "Puff", "Rumble", "Scrape",
+  "Smack", "Swoosh", "Taps", "Whack", "Whoop", "Yelp", "Boing"
+];
+
+const RecordAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
   const [name, setName] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+
+  const generateInstrumentName = () => {
+    // Pick a random word from the list
+    let baseName = ONOMATOPOEIC_WORDS[Math.floor(Math.random() * ONOMATOPOEIC_WORDS.length)];
+    
+    // Check for duplicates and add incrementing integer if necessary
+    let uniqueName = baseName;
+    let counter = 2;
+    while (existingTrackNames.includes(uniqueName.toLowerCase())) {
+      const suffix = `-${counter}`;
+      uniqueName = baseName.slice(0, 9 - suffix.length) + suffix;
+      counter++;
+    }
+    
+    return uniqueName;
+  };
+
+  useEffect(() => {
+    if (isRecording && !name) {
+      const generatedName = generateInstrumentName();
+      setName(generatedName);
+    }
+  }, [isRecording, name, existingTrackNames]);
 
   useEffect(() => {
     return () => {
@@ -68,6 +104,7 @@ const RecordAudio = ({ onDataChange, onCancel }) => {
         <audio src={audioURL} controls />
       )}
       <button type="submit" disabled={!audioURL || !name}>Add Track</button>
+      <button type="button" onClick={onCancel}>Back</button>
     </form>
   );
 };
