@@ -1,8 +1,8 @@
 .new-track-form {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
-  padding: 20px;
+  padding: 10px;
   background-color: var(--beat-group-odd);
   border-radius: 8px;
   margin-bottom: 20px;
@@ -16,14 +16,17 @@
   font-size: 16px;
   background-color: var(--button-bg);
   color: var(--button-text);
+  height: 40px;
+  white-space: nowrap;
 }
 
 .new-track-form input {
-  flex: 1 1 200px;
+  flex: 1;
+  min-width: 100px;
 }
 
 .new-track-form button {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -35,11 +38,6 @@
 .audio-options {
   display: flex;
   gap: 10px;
-  flex: 1 1 100%;
-}
-
-.audio-options button {
-  flex: 1;
 }
 
 .upload-audio,
@@ -47,17 +45,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1 1 100%;
 }
 
 .upload-audio span,
 .record-audio audio {
-  flex: 1;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 767px) {
   .new-track-form {
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
   .new-track-form input,
@@ -65,6 +64,6 @@
   .audio-options,
   .upload-audio,
   .record-audio {
-    width: 100%;
+    flex: 1 1 auto;
   }
 }
