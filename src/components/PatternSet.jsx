@@ -212,6 +212,24 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
     setShowNewTrackForm(true);
   }, []);
 
+  // Create a sorted list of instrument records
+  const sortedInstrumentRecords = useMemo(() => {
+    const records = Object.values(instrumentRecords);
+    return records.sort((a, b) => {
+      // Put default instruments at the bottom
+      if (DEFAULT_INSTRUMENTS.includes(a.name) && !DEFAULT_INSTRUMENTS.includes(b.name)) return 1;
+      if (!DEFAULT_INSTRUMENTS.includes(a.name) && DEFAULT_INSTRUMENTS.includes(b.name)) return -1;
+      
+      // For non-default instruments, sort by createdAt (most recent first)
+      if (!DEFAULT_INSTRUMENTS.includes(a.name) && !DEFAULT_INSTRUMENTS.includes(b.name)) {
+        return b.createdAt - a.createdAt;
+      }
+      
+      // For default instruments, maintain their original order
+      return DEFAULT_INSTRUMENTS.indexOf(a.name) - DEFAULT_INSTRUMENTS.indexOf(b.name);
+    });
+  }, [instrumentRecords]);
+
   return (
     <div className="pattern-set">
       {showNewTrackForm && (
@@ -221,7 +239,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           existingTrackNames={existingTrackNames}
         />
       )}
-      {Object.values(instrumentRecords).map((instrumentRecord) => (
+      {sortedInstrumentRecords.map((instrumentRecord) => (
         <Pattern
           key={instrumentRecord._id}
           instrumentId={instrumentRecord._id}
