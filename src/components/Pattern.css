@@ -39,7 +39,7 @@
   min-width: 120px;
   padding: 10px;
   border-radius: 4px;
-  transition: all 0.3s ease;
+  /* transition: all 0.3s ease; */
 }
 
 .instrument-button:hover {
