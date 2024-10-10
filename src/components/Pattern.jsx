@@ -238,10 +238,28 @@ const Pattern = ({
   return (
     <div className="pattern">
       <div className="pattern-controls">
-        <button className={`info-button ${showInfo ? 'active' : ''}`} onClick={() => setShowInfo(!showInfo)}>ⓘ</button>
+        <button 
+          className={`info-button ${showInfo ? 'active' : ''}`} 
+          onClick={() => setShowInfo(!showInfo)}
+          aria-label="Information"
+        >
+          <span className="material-icons">info</span>
+        </button>
         <button className="instrument-button" onClick={playSound}>{instrument}</button>
-        <button className={`mute-button ${isMuted ? 'active' : ''}`} onClick={onMuteToggle}>M</button>
-        <button className={`solo-button ${isSolo ? 'active' : ''}`} onClick={onSoloToggle}>S</button>
+        <button 
+          className={`mute-button ${isMuted ? 'active' : ''}`} 
+          onClick={onMuteToggle}
+          aria-label="Mute"
+        >
+          <span className="material-icons">volume_off</span>
+        </button>
+        <button 
+          className={`solo-button ${isSolo ? 'active' : ''}`} 
+          onClick={onSoloToggle}
+          aria-label="Solo"
+        >
+          <span className="material-icons">hearing</span>
+        </button>
       </div>
       {showInfo ? (
         <form onSubmit={handleSubmit} className="edit-form">

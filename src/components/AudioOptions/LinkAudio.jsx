@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import '../NewTrackForm.css';
 
-const LinkAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
+const LinkAudio = ({ onDataChange, existingTrackNames }) => {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
 
@@ -59,7 +60,9 @@ const LinkAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
         placeholder="Audio URL"
         required
       />
-      <button type="submit" disabled={!url || !name}>Add Track</button>
+      <button type="submit" disabled={!url || !name} className="audio-option-button" aria-label="Add Track">
+        <span className="material-icons">check</span>
+      </button>
     </form>
   );
 };

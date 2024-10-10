@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import '../NewTrackForm.css';
 
 const ONOMATOPOEIC_WORDS = [
   // ... (insert the list of words here)
@@ -13,7 +14,7 @@ const ONOMATOPOEIC_WORDS = [
   "Smack", "Swoosh", "Taps", "Whack", "Whoop", "Yelp", "Boing"
 ];
 
-const RecordAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
+const RecordAudio = ({ onDataChange, existingTrackNames }) => {
   const [name, setName] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
@@ -96,15 +97,20 @@ const RecordAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
         required
       />
       {!isRecording ? (
-        <button type="button" onClick={startRecording}>Start Recording</button>
+        <button type="button" onClick={startRecording} className="audio-option-button" aria-label="Start Recording">
+          <span className="material-icons">mic</span>
+        </button>
       ) : (
-        <button type="button" onClick={stopRecording}>Stop Recording</button>
+        <button type="button" onClick={stopRecording} className="audio-option-button" aria-label="Stop Recording">
+          <span className="material-icons">stop</span>
+        </button>
       )}
       {audioURL && (
         <audio src={audioURL} controls />
       )}
-      <button type="submit" disabled={!audioURL || !name}>Add Track</button>
-      <button type="button" onClick={onCancel}>Back</button>
+      <button type="submit" disabled={!audioURL || !name} className="audio-option-button" aria-label="Add Track">
+        <span className="material-icons">check</span>
+      </button>
     </form>
   );
 };

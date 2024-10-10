@@ -112,12 +112,21 @@
 .pattern-controls .info-button,
 .pattern-controls .mute-button,
 .pattern-controls .solo-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-left: 5px;
   padding: 10px 6px;
   min-width: 29px;
   text-align: center;
   border: 1px solid #ccc;
   cursor: pointer;
+}
+
+.pattern-controls .info-button .material-icons,
+.pattern-controls .mute-button .material-icons,
+.pattern-controls .solo-button .material-icons {
+  font-size: 18px;
 }
 
 /* Styles for mobile screens */

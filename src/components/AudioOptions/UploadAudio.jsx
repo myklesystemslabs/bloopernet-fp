@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import '../NewTrackForm.css';
 
-const UploadAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
+const UploadAudio = ({ onDataChange, existingTrackNames }) => {
   const [name, setName] = useState('');
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -65,8 +66,9 @@ const UploadAudio = ({ onDataChange, onCancel, existingTrackNames }) => {
         required
       />
       {file && <span>{file.name}</span>}
-      <button type="submit" disabled={!file || !name}>Add Track</button>
-      <button type="button" onClick={onCancel}>Back</button>
+      <button type="submit" disabled={!file || !name} className="audio-option-button" aria-label="Add Track">
+        <span className="material-icons">check</span>
+      </button>
     </form>
   );
 };
