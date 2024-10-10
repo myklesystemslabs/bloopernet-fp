@@ -34,9 +34,9 @@
 }
 
 /* Remove any specific styling for muted state */
-.mute-button.muted {
+/* .mute-button.muted {
   animation: pulseBorder 2s infinite;
-}
+} */
 
 @keyframes pulseBorder {
   0% {
