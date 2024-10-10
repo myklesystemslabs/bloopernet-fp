@@ -5,55 +5,50 @@ import UploadAudio from './AudioOptions/UploadAudio';
 import RecordAudio from './AudioOptions/RecordAudio';
 
 const NewTrackForm = ({ onSubmit, onCancel }) => {
-  const [name, setName] = useState('');
   const [audioOption, setAudioOption] = useState(null);
   const [audioData, setAudioData] = useState(null);
   const [mimeType, setMimeType] = useState(null);
   const [referenceType, setReferenceType] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({ name, audioData, mimeType, referenceType });
-  };
-
-  const handleAudioDataChange = (data, type, reference) => {
+  const handleAudioDataChange = (data, type, reference, name) => {
     setAudioData(data);
     setMimeType(type);
     setReferenceType(reference);
+    if (name) {
+      handleSubmit(name, data, type, reference);
+    }
+  };
+
+  const handleSubmit = (name, data, type, reference) => {
+    onSubmit({ name, audioData: data, mimeType: type, referenceType: reference });
   };
 
   const renderAudioOption = () => {
     switch (audioOption) {
       case 'link':
-        return <LinkAudio onDataChange={(data) => handleAudioDataChange(data, 'audio/wav', 'url')} />;
+        return <LinkAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} />;
       case 'upload':
-        return <UploadAudio onDataChange={(data, type) => handleAudioDataChange(data, type, 'database')} />;
+        return <UploadAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} />;
       case 'record':
-        return <RecordAudio onDataChange={(data) => handleAudioDataChange(data, 'audio/wav', 'database')} />;
+        return <RecordAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} />;
       default:
-        return (
-          <div className="audio-options">
-            <button type="button" onClick={() => setAudioOption('link')}>Link</button>
-            <button type="button" onClick={() => setAudioOption('upload')}>Upload</button>
-            <button type="button" onClick={() => setAudioOption('record')}>Record</button>
-          </div>
-        );
+        return null;
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="new-track-form">
-      <input 
-        type="text" 
-        value={name} 
-        onChange={(e) => setName(e.target.value)} 
-        placeholder="Instrument Name"
-        required
-      />
-      {renderAudioOption()}
-      <button type="button" onClick={onCancel}>Cancel</button>
-      {audioOption && audioData && <button type="submit">Add Track</button>}
-    </form>
+    <div className="new-track-form">
+      {!audioOption ? (
+        <div className="audio-options">
+          <button type="button" onClick={() => setAudioOption('link')}>Link</button>
+          <button type="button" onClick={() => setAudioOption('upload')}>Upload</button>
+          <button type="button" onClick={() => setAudioOption('record')}>Record</button>
+        </div>
+      ) : (
+        renderAudioOption()
+      )}
+      <button type="button" onClick={onCancel} className="cancel-button">Cancel</button>
+    </div>
   );
 };
 

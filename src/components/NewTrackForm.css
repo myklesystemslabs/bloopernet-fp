@@ -1,11 +1,19 @@
 .new-track-form {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
   padding: 10px;
   background-color: var(--beat-group-odd);
   border-radius: 8px;
   margin-bottom: 20px;
+}
+
+.audio-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-grow: 1;
 }
 
 .new-track-form input,
@@ -20,13 +28,12 @@
   white-space: nowrap;
 }
 
-.new-track-form input {
-  flex: 1;
-  min-width: 100px;
+.new-track-form input[type="text"] {
+  min-width: 150px;
+  flex-grow: 1;
 }
 
 .new-track-form button {
-  flex: 0 0 auto;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -35,16 +42,13 @@
   background-color: var(--button-hover);
 }
 
-.audio-options {
-  display: flex;
-  gap: 10px;
-}
-
 .upload-audio,
-.record-audio {
+.record-audio,
+.link-audio {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-grow: 1;
 }
 
 .upload-audio span,
@@ -54,16 +58,26 @@
   text-overflow: ellipsis;
 }
 
+.new-track-form .cancel-button {
+  margin-left: auto;
+}
+
 @media (max-width: 767px) {
-  .new-track-form {
-    flex-wrap: wrap;
+  .new-track-form,
+  .audio-options,
+  .upload-audio,
+  .record-audio,
+  .link-audio {
+    flex-direction: column;
+    width: 100%;
   }
 
   .new-track-form input,
-  .new-track-form button,
-  .audio-options,
-  .upload-audio,
-  .record-audio {
-    flex: 1 1 auto;
+  .new-track-form button {
+    width: 100%;
+  }
+
+  .new-track-form .cancel-button {
+    margin-left: 0;
   }
 }
