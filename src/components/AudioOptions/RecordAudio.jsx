@@ -68,7 +68,6 @@ const RecordAudio = ({ onDataChange, onCancel }) => {
         <audio src={audioURL} controls />
       )}
       <button type="submit" disabled={!audioURL || !name}>Add Track</button>
-      <button type="button" onClick={onCancel}>Back</button>
     </form>
   );
 };

@@ -53,6 +53,11 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
     return records;
   }, [instrumentDocs, ts]);
 
+  // Create a list of existing track names
+  const existingTrackNames = useMemo(() => {
+    return Object.values(instrumentRecords).map(record => record.name.toLowerCase());
+  }, [instrumentRecords]);
+
   const calculateElapsedQuarterBeats = useCallback(() => {
     if (!ts){console.warn("no timesync"); return 0;}
     if (!ts || !bpm || !lastChanged_ms || !playing) return 0;
@@ -213,6 +218,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
         <NewTrackForm
           onSubmit={handleSubmitNewTrack}
           onCancel={handleCancelNewTrack}
+          existingTrackNames={existingTrackNames}
         />
       )}
       {Object.values(instrumentRecords).map((instrumentRecord) => (

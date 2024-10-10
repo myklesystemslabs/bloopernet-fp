@@ -4,7 +4,7 @@ import LinkAudio from './AudioOptions/LinkAudio';
 import UploadAudio from './AudioOptions/UploadAudio';
 import RecordAudio from './AudioOptions/RecordAudio';
 
-const NewTrackForm = ({ onSubmit, onCancel }) => {
+const NewTrackForm = ({ onSubmit, onCancel, existingTrackNames }) => {
   const [audioOption, setAudioOption] = useState(null);
   const [audioData, setAudioData] = useState(null);
   const [mimeType, setMimeType] = useState(null);
@@ -26,11 +26,11 @@ const NewTrackForm = ({ onSubmit, onCancel }) => {
   const renderAudioOption = () => {
     switch (audioOption) {
       case 'link':
-        return <LinkAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} />;
+        return <LinkAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} existingTrackNames={existingTrackNames} />;
       case 'upload':
-        return <UploadAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} />;
+        return <UploadAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} existingTrackNames={existingTrackNames} />;
       case 'record':
-        return <RecordAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} />;
+        return <RecordAudio onDataChange={handleAudioDataChange} onCancel={() => setAudioOption(null)} existingTrackNames={existingTrackNames} />;
       default:
         return null;
     }
