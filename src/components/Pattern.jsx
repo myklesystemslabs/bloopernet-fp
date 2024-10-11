@@ -31,6 +31,7 @@ const Pattern = ({
   existingTrackNames,
   onVolumeChange, // Add this prop
   initialVolume, // Add this prop
+  onTrackChange, // Add this prop
 }) => {
   const { database } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -243,7 +244,7 @@ const Pattern = ({
     onVolumeChange(instrumentId, newVolume);
   };
 
-  const handleDeleteClick = () => {
+  const handleDeleteOrRevert = () => {
     setShowDeleteConfirm(true);
   };
 
@@ -306,9 +307,14 @@ const Pattern = ({
           {!showChangeForm && (
             <button className="track-change-button" onClick={() => setShowChangeForm(true)} role="button" tabIndex="0">Change Sample</button>
           )}
-          {(!isDefaultInstrument && !showChangeForm) && (
-            <button className="track-delete-button" onClick={handleDeleteClick} role="button" tabIndex="0">Delete</button>
-          )}
+          <button 
+            className="track-delete-button" 
+            onClick={handleDeleteOrRevert} 
+            role="button" 
+            tabIndex="0"
+          >
+            {isDefaultInstrument ? 'Revert' : 'Delete'}
+          </button>
         </div>
       ) : (
         <div className="beat-buttons">
@@ -318,8 +324,7 @@ const Pattern = ({
       {showChangeForm && (
         <TrackForm
           onSubmit={(newData) => {
-            onNameChange(instrumentId, newData.name);
-            // Here you would also update the audio file, mimeType, etc.
+            onTrackChange(instrumentId, newData);
             setShowChangeForm(false);
           }}
           onCancel={() => setShowChangeForm(false)}
@@ -329,12 +334,16 @@ const Pattern = ({
       )}
       {showDeleteConfirm && (
         <div className="delete-confirm">
-          <p>Are you sure you want to delete this track?</p>
+          <p>
+            {isDefaultInstrument 
+              ? 'Are you sure you want to revert this track?' 
+              : 'Are you sure you want to delete this track?'}
+          </p>
           <div className="delete-confirm-buttons">
-            <button onClick={handleDeleteConfirm} className="confirm-button" aria-label="Confirm Delete">
+            <button onClick={handleDeleteConfirm} className="confirm-button" aria-label="Confirm">
               <span className="material-icons">check</span>
             </button>
-            <button onClick={handleDeleteCancel} className="cancel-button" aria-label="Cancel Delete">
+            <button onClick={handleDeleteCancel} className="cancel-button" aria-label="Cancel">
               <span className="material-icons">close</span>
             </button>
           </div>

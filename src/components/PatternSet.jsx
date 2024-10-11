@@ -32,28 +32,24 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
   // Create a map of instrument records with defaults for missing data
   const instrumentRecords = useMemo(() => {
     const records = {};
-    instrumentDocs.rows.forEach(row => {
-      records[row.id] = row.doc;
+    DEFAULT_INSTRUMENTS.forEach(instrument => {
+      records[instrument] = {
+        _id: instrument,
+        name: instrument,
+        audioFile: `/sounds/${instrument.toLowerCase()}.wav`,
+        mimeType: 'audio/wav',
+        referenceType: 'url'
+      };
     });
 
-    // Add default records for missing default instruments
-    DEFAULT_INSTRUMENTS.forEach(instrument => {
-      const id = instrument.toLowerCase();
-      if (!records[id]) {
-        records[id] = {
-          _id: id,
-          type: 'instrument',
-          name: instrument,
-          audioFile: `/sounds/${id}.wav`,
-          mimeType: 'audio/wav',
-          referenceType: 'url',
-          createdAt: ts ? ts.now() : Date.now()
-        };
-      }
+    instrumentDocs.rows.forEach(row => {
+      const doc = row.doc;
+      // This will overwrite default instruments if customized
+      records[doc._id] = { ...records[doc._id], ...doc };
     });
 
     return records;
-  }, [instrumentDocs, ts]);
+  }, [instrumentDocs]);
 
   // Create a list of existing track names
   const existingTrackNames = useMemo(() => {
@@ -254,6 +250,44 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
     return () => clearInterval(intervalId);
   }, []);
 
+  const handleTrackChange = useCallback(async (instrumentId, newData) => {
+    try {
+      const doc = {
+        _id: instrumentId,
+        type: 'instrument',
+        name: newData.name,
+        mimeType: newData.mimeType,
+        referenceType: newData.referenceType,
+        // Include any other necessary fields
+      };
+
+      // Handle file upload
+      if (newData.audioData instanceof File) {
+        doc._files = {
+          [newData.audioData.name]: newData.audioData
+        };
+        doc.audioFile = newData.audioData.name;
+      } else {
+        // If it's not a new file, keep the existing audioFile value
+        doc.audioFile = newData.audioData;
+      }
+
+      const putResponse = await database.put(doc);
+
+      // // Update the local state
+      // setInstrumentRecords(prev => ({
+      //   ...prev,
+      //   [instrumentId]: {
+      //     ...prev[instrumentId],
+      //     ...doc,
+      //     _id: putResponse.id,
+      //   }
+      // }));
+    } catch (error) {
+      console.error('Error updating track:', error);
+    }
+  }, [database]);
+
   return (
     <div className="pattern-set">
       {showNewTrackForm && (
@@ -289,6 +323,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           existingTrackNames={existingTrackNames}
           onVolumeChange={handleVolumeChange}
           initialVolume={trackSettings[instrumentRecord._id]?.volume || 100}
+          onTrackChange={handleTrackChange}
         />
       ))}
     </div>
