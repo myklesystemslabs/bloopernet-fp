@@ -41,7 +41,10 @@
 
 .instrument-button,
 .pattern-controls .mute-button,
-.pattern-controls .solo-button {
+.pattern-controls .solo-button,
+.pattern-controls .info-button,
+.info-panel .track-change-button,
+.info-panel .track-delete-button {
   background-color: var(--instrument-button-bg);
   border: 2px solid var(--instrument-button-border);
   cursor: pointer;

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
-import NewTrackForm from './NewTrackForm';
+import TrackForm from './TrackForm';
 import { v4 as uuidv4 } from 'uuid';
 import { isMasterMuted } from '../audioUtils'; // Add this import
 import './PatternSet.css';
@@ -250,7 +250,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
   return (
     <div className="pattern-set">
       {showNewTrackForm && (
-        <NewTrackForm
+        <TrackForm
           onSubmit={handleSubmitNewTrack}
           onCancel={handleCancelNewTrack}
           existingTrackNames={existingTrackNames}
@@ -272,12 +272,14 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           isMuted={trackSettings[instrumentRecord._id]?.muted || false}
           isSolo={trackSettings[instrumentRecord._id]?.soloed || false}
           anyTrackSoloed={anyTrackSoloed}
-          masterMuted={masterMuted} // Use the state here
+          masterMuted={masterMuted}
           onMuteToggle={() => handleMuteToggle(instrumentRecord._id)}
           onSoloToggle={() => handleSoloToggle(instrumentRecord._id)}
           onDeleteTrack={handleDeleteTrack}
+          onNameChange={handleNameChange}
           isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrumentRecord.name)}
           dbName={dbName}
+          existingTrackNames={existingTrackNames}
         />
       ))}
     </div>

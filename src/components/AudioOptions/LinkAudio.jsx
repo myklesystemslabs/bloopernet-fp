@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import '../NewTrackForm.css';
+import '../TrackForm.css';
 
-const LinkAudio = ({ onDataChange, existingTrackNames }) => {
-  const [name, setName] = useState('');
-  const [url, setUrl] = useState('');
+const LinkAudio = ({ onDataChange, onCancel, existingTrackNames, initialData }) => {
+  const [name, setName] = useState(initialData ? initialData.name : '');
+  const [url, setUrl] = useState(initialData ? initialData.audioFile : '');
 
   const generateInstrumentName = (url) => {
     // Extract the last part of the URL path

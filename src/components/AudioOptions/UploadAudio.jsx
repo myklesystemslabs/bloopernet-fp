@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import '../NewTrackForm.css';
+import '../TrackForm.css';
 
-const UploadAudio = ({ onDataChange, existingTrackNames }) => {
-  const [name, setName] = useState('');
+const UploadAudio = ({ onDataChange, existingTrackNames, initialData }) => {
+  const [name, setName] = useState(initialData ? initialData.name : '');
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
 

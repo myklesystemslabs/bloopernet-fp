@@ -5,6 +5,7 @@ import InstrumentInfo from './InstrumentInfo';
 import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHeadStart_ms, getMasterGainNode, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
+import TrackForm from './TrackForm';
 
 const Pattern = ({ 
   instrumentId,
@@ -26,7 +27,8 @@ const Pattern = ({
   onDeleteTrack,
   isDefaultInstrument,
   dbName,
-  masterMuted // Add this line
+  masterMuted,
+  existingTrackNames
 }) => {
   const { database } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -40,8 +42,7 @@ const Pattern = ({
   const scheduledEventsRef = useRef([]);
   const timesyncStartTime_ms = useRef(null);
   const [showInfo, setShowInfo] = useState(false);
-  const [editName, setEditName] = useState(instrument);
-  const [editAudioFile, setEditAudioFile] = useState(audioFile);
+  const [showChangeForm, setShowChangeForm] = useState(false);
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -183,23 +184,6 @@ const Pattern = ({
     }
   }, [ts, playing, scheduleNextQuarterBeat, bpm, isMuted, isSolo]);
 
-  useEffect(() => {
-    setEditName(instrument);
-    setEditAudioFile(audioFile);
-  }, [instrument, audioFile]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onNameChange(instrumentId, editName);
-    setShowInfo(false);
-  };
-
-  const handleCancel = () => {
-    setShowInfo(false);
-    setEditName(instrument);
-    setEditAudioFile(audioFile);
-  };
-
   const playSound = () => {
     if (soundBuffer) {
       playSoundBuffer(soundBuffer);
@@ -207,8 +191,6 @@ const Pattern = ({
       console.warn(`Sound for ${instrument} not loaded yet`);
     }
   };
-
-  const isSilent = masterMuted || isMuted || (anyTrackSoloed && !isSolo);
 
   const renderBeatButtons = () => {
     const groups = [];
@@ -226,7 +208,7 @@ const Pattern = ({
             isStarting={elapsedQuarterBeats < 0 && playing}
             updateBeat={updateBeat}
             className={`beat-group-${i}`}
-            isSilent={isSilent}
+            isSilent={isMuted || (anyTrackSoloed && !isSolo) || masterMuted}
           />
         );
       }
@@ -239,57 +221,65 @@ const Pattern = ({
     return groups;
   };
 
+  const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
+
   return (
     <div className={`pattern ${isSilent ? 'silent' : ''}`}>
       <div className="pattern-controls">
-        {/* <button 
+        <button
           className={`info-button ${showInfo ? 'active' : ''}`} 
           onClick={() => setShowInfo(!showInfo)}
+          role="button"
+          tabIndex="0"
           aria-label="Information"
         >
           <span className="material-icons">info</span>
-        </button> */}
-        <button className="instrument-button" onClick={playSound}>{instrument}</button>
+        </button>
+        <button className="instrument-button" onClick={playSound} role="button" tabIndex="0">{instrument}</button>
         <button 
           className={`mute-button ${isMuted ? 'active' : ''}`} 
           onClick={onMuteToggle}
+          role="button"
+          tabIndex="0"
           aria-label="Mute"
         >
-          <span className="material-icons">volume_off</span>
+          <span className="material-icons">hearing_disabled</span>
         </button>
         <button 
           className={`solo-button ${isSolo ? 'active' : ''}`} 
           onClick={onSoloToggle}
+          role="button"
+          tabIndex="0"
           aria-label="Solo"
         >
           <span className="material-icons">hearing</span>
         </button>
       </div>
       {showInfo ? (
-        <form onSubmit={handleSubmit} className="edit-form">
-          <input 
-            type="text" 
-            value={editName} 
-            onChange={(e) => setEditName(e.target.value)} 
-            placeholder="Instrument Name"
-            disabled={isDefaultInstrument}
-          />
-          <input 
-            type="text" 
-            value={editAudioFile} 
-            onChange={(e) => setEditAudioFile(e.target.value)} 
-            placeholder="Audio File URL"
-          />
-          <button type="submit">Update</button>
-          <button type="button" onClick={handleCancel}>Cancel</button>
-          {!isDefaultInstrument && (
-            <button type="button" className="delete-button" onClick={() => onDeleteTrack(instrumentId)}>Delete</button>
+        <div className="info-panel">
+          {!showChangeForm && (
+            <button className="track-change-button" onClick={() => setShowChangeForm(true)} role="button" tabIndex="0">Change</button>
           )}
-        </form>
+          {(!isDefaultInstrument && !showChangeForm) && (
+            <button className="track-delete-button" onClick={() => onDeleteTrack(instrumentId)} role="button" tabIndex="0">Delete</button>
+          )}
+        </div>
       ) : (
         <div className="beat-buttons">
           {renderBeatButtons()}
         </div>
+      )}
+      {showChangeForm && (
+        <TrackForm
+          onSubmit={(newData) => {
+            onNameChange(instrumentId, newData.name);
+            // Here you would also update the audio file, mimeType, etc.
+            setShowChangeForm(false);
+          }}
+          onCancel={() => setShowChangeForm(false)}
+          existingTrackNames={existingTrackNames}
+          initialData={{ name: instrument, audioFile, mimeType, referenceType }}
+        />
       )}
       {isLoading && <div>Loading audio...</div>}
     </div>

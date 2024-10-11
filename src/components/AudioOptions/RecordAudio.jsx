@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import '../NewTrackForm.css';
+import '../TrackForm.css';
 
 const ONOMATOPOEIC_WORDS = [
   // ... (insert the list of words here)
@@ -14,8 +14,8 @@ const ONOMATOPOEIC_WORDS = [
   "Smack", "Swoosh", "Taps", "Whack", "Whoop", "Yelp", "Boing"
 ];
 
-const RecordAudio = ({ onDataChange, existingTrackNames }) => {
-  const [name, setName] = useState('');
+const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
+  const [name, setName] = useState(initialData ? initialData.name : '');
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
   const mediaRecorderRef = useRef(null);
