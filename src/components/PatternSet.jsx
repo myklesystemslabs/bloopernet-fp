@@ -191,10 +191,13 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
       await database.del(instrumentId);
 
       // Delete associated beats
-      const beatDocs = await database.query('type', { 
-        key: 'beat', 
-        filter: doc => doc._id.startsWith(`beat-${instrumentId}-`)
-      });
+      const beatDocs = await database.query(
+        doc => {
+          if (doc.type === 'beat' && doc._id.startsWith(`beat-${instrumentId}-`)){
+            return doc._id;
+          }
+        }
+      )
       await Promise.all(beatDocs.rows.map(row => database.del(row.id)));
 
       // Remove from track settings
