@@ -28,7 +28,9 @@ const Pattern = ({
   isDefaultInstrument,
   dbName,
   masterMuted,
-  existingTrackNames
+  existingTrackNames,
+  onVolumeChange, // Add this prop
+  initialVolume, // Add this prop
 }) => {
   const { database } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -43,6 +45,7 @@ const Pattern = ({
   const timesyncStartTime_ms = useRef(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showChangeForm, setShowChangeForm] = useState(false);
+  const [volume, setVolume] = useState(initialVolume || 100);
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -84,10 +87,17 @@ const Pattern = ({
 
   useEffect(() => {
     if (gainNodeRef.current) {
-      const gain = (!isMuted && (isSolo || !anyTrackSoloed)) ? 1 : 0;
+      const gain = calculateGain();
       gainNodeRef.current.gain.setValueAtTime(gain, getAudioContext().currentTime);
     }
-  }, [isMuted, isSolo, anyTrackSoloed]);
+  }, [isMuted, isSolo, anyTrackSoloed, volume]);
+
+  const calculateGain = () => {
+    if (isMuted || (anyTrackSoloed && !isSolo)) {
+      return 0;
+    }
+    return volume / 100;
+  };
 
   const scheduleBeats = useCallback((scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
     if (!soundBuffer || !playing) return [];
@@ -98,15 +108,15 @@ const Pattern = ({
     let nextBeatNumber = (startBeatNumber) % patternLength;
     for (let i = 0; i < quarterBeatsToSchedule; i++) {
       if (beats[`beat-${instrumentId}-${nextBeatNumber}`]) {
-
-        sourceNodeRef.current = ctx.createBufferSource();
-        sourceNodeRef.current.buffer = soundBuffer;
-        sourceNodeRef.current.connect(gainNodeRef.current);
+        const source = ctx.createBufferSource();
+        source.buffer = soundBuffer;
+        source.connect(gainNodeRef.current);
 
         const beatTime_s = scheduleStart_s + (i * 15 / bpm);
-        const event = scheduleBeat(sourceNodeRef.current, beatTime_s);
+        const event = scheduleBeat(source, beatTime_s);
         if (event) events.push(event);
       }
+      nextBeatNumber = (nextBeatNumber + 1) % patternLength;
     }
 
     return events;
@@ -186,7 +196,10 @@ const Pattern = ({
 
   const playSound = () => {
     if (soundBuffer) {
-      playSoundBuffer(soundBuffer);
+      const source = getAudioContext().createBufferSource();
+      source.buffer = soundBuffer;
+      source.connect(gainNodeRef.current);
+      source.start();
     } else {
       console.warn(`Sound for ${instrument} not loaded yet`);
     }
@@ -223,6 +236,12 @@ const Pattern = ({
 
   const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
 
+  const handleVolumeChange = (e) => {
+    const newVolume = parseInt(e.target.value, 10);
+    setVolume(newVolume);
+    onVolumeChange(instrumentId, newVolume);
+  };
+
   return (
     <div className={`pattern ${isSilent ? 'silent' : ''}`}>
       <div className="pattern-controls">
@@ -257,6 +276,19 @@ const Pattern = ({
       </div>
       {showInfo ? (
         <div className="info-panel">
+          {!showChangeForm && (
+            <div className="volume-control">
+              <label htmlFor={`volume-${instrumentId}`}>Volume: {volume}%</label>
+            <input
+              type="range"
+              id={`volume-${instrumentId}`}
+              min="0"
+              max="200"
+              value={volume}
+              onChange={handleVolumeChange}
+              />
+            </div>
+          )}
           {!showChangeForm && (
             <button className="track-change-button" onClick={() => setShowChangeForm(true)} role="button" tabIndex="0">Change</button>
           )}

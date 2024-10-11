@@ -126,6 +126,10 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
     });
   }, []);
 
+  const handleVolumeChange = useCallback((instrumentId, volume) => {
+    updateTrackSetting(instrumentId, 'volume', volume);
+  }, [updateTrackSetting]);
+
   
   const handleSubmitNewTrack = useCallback(async (newTrack) => {
     const newId = `${newTrack.name.toLowerCase()}-${uuidv4()}`;
@@ -280,6 +284,8 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           isDefaultInstrument={DEFAULT_INSTRUMENTS.includes(instrumentRecord.name)}
           dbName={dbName}
           existingTrackNames={existingTrackNames}
+          onVolumeChange={handleVolumeChange}
+          initialVolume={trackSettings[instrumentRecord._id]?.volume || 100}
         />
       ))}
     </div>

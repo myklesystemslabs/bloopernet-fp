@@ -39,6 +39,11 @@
   width: 100%;
 }
 
+.info-panel {
+  display: flex;
+  gap: 10px;
+}
+
 .instrument-button,
 .pattern-controls .mute-button,
 .pattern-controls .solo-button,
@@ -90,7 +95,11 @@
 .pattern-controls {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.pattern-controls button {
+  /* ... existing button styles ... */
 }
 
 .pattern-controls .mute-button {
@@ -243,3 +252,20 @@
 }
 
 /* Add similar styles for other elements that need to be desaturated */
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  max-width: 200px;
+}
+
+.volume-control input[type="range"] {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.volume-label {
+  min-width: 40px;
+  text-align: right;
+}

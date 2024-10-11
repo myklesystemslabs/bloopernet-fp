@@ -66,7 +66,7 @@ export const setMasterMute = async (mute) => {
       await loadSilenceBuffer();
     }
     if (silenceBuffer) {
-      playSoundBuffer(silenceBuffer);
+      playSoundBuffer(silenceBuffer, masterGainNode);
     }
 
     // Short delay to allow audio to initialize
@@ -96,10 +96,10 @@ export const loadSound = async (source) => {
   return await getAudioContext().decodeAudioData(arrayBuffer);
 };
 
-export const playSoundBuffer = (buffer) => {
+export const playSoundBuffer = (buffer, outputNode) => {
   const source = getAudioContext().createBufferSource();
   source.buffer = buffer;
-  source.connect(masterGainNode);
+  source.connect(outputNode);
   source.start();
 };
 
