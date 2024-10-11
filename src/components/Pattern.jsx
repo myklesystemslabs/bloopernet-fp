@@ -46,6 +46,7 @@ const Pattern = ({
   const [showInfo, setShowInfo] = useState(false);
   const [showChangeForm, setShowChangeForm] = useState(false);
   const [volume, setVolume] = useState(initialVolume || 100);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // used for decorating buttons
   const currentQuarterBeat = (elapsedQuarterBeats + patternLength) % patternLength;
@@ -242,6 +243,19 @@ const Pattern = ({
     onVolumeChange(instrumentId, newVolume);
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDeleteTrack(instrumentId);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+  };
+
   return (
     <div className={`pattern ${isSilent ? 'silent' : ''}`}>
       <div className="pattern-controls">
@@ -290,10 +304,10 @@ const Pattern = ({
             </div>
           )}
           {!showChangeForm && (
-            <button className="track-change-button" onClick={() => setShowChangeForm(true)} role="button" tabIndex="0">Change</button>
+            <button className="track-change-button" onClick={() => setShowChangeForm(true)} role="button" tabIndex="0">Change Sample</button>
           )}
           {(!isDefaultInstrument && !showChangeForm) && (
-            <button className="track-delete-button" onClick={() => onDeleteTrack(instrumentId)} role="button" tabIndex="0">Delete</button>
+            <button className="track-delete-button" onClick={handleDeleteClick} role="button" tabIndex="0">Delete</button>
           )}
         </div>
       ) : (
@@ -312,6 +326,19 @@ const Pattern = ({
           existingTrackNames={existingTrackNames}
           initialData={{ name: instrument, audioFile, mimeType, referenceType }}
         />
+      )}
+      {showDeleteConfirm && (
+        <div className="delete-confirm">
+          <p>Are you sure you want to delete this track?</p>
+          <div className="delete-confirm-buttons">
+            <button onClick={handleDeleteConfirm} className="confirm-button" aria-label="Confirm Delete">
+              <span className="material-icons">check</span>
+            </button>
+            <button onClick={handleDeleteCancel} className="cancel-button" aria-label="Cancel Delete">
+              <span className="material-icons">close</span>
+            </button>
+          </div>
+        </div>
       )}
       {isLoading && <div>Loading audio...</div>}
     </div>
