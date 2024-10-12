@@ -18,6 +18,12 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [latency, setLatency] = useState(0);
   const [deviceId, setDeviceId] = useState(null);
   const latencyTimeoutRef = useRef(null);
+  const [isEditingLatency, setIsEditingLatency] = useState(false);
+  const latencyInputRef = useRef(null);
+  const [isEditingBpm, setIsEditingBpm] = useState(false);
+  const bpmInputRef = useRef(null);
+  const [editingBpm, setEditingBpm] = useState(null);
+  const [editingLatency, setEditingLatency] = useState(null);
 
   useEffect(() => {
     // Load or generate device ID
@@ -213,6 +219,86 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     console.log('Measure latency');
   };
 
+  const handleLatencyClick = () => {
+    setEditingLatency(latency);
+    setIsEditingLatency(true);
+  };
+
+  const handleLatencyInputChange = (e) => {
+    const newLatency = parseInt(e.target.value, 10);
+    if (!isNaN(newLatency) && newLatency >= 0 && newLatency <= 3000) {
+      setEditingLatency(newLatency);
+    }
+  };
+
+  const handleLatencyInputBlur = () => {
+    setIsEditingLatency(false);
+    if (editingLatency !== null) {
+      setLatency(editingLatency);
+      updateDeviceDoc(editingLatency);
+    }
+    setEditingLatency(null);
+  };
+
+  const handleLatencyInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setIsEditingLatency(false);
+      setLatency(editingLatency);
+      updateDeviceDoc(editingLatency);
+      setEditingLatency(null);
+    } else if (e.key === 'Escape') {
+      setIsEditingLatency(false);
+      setEditingLatency(null);
+    }
+  };
+
+  useEffect(() => {
+    if (isEditingLatency && latencyInputRef.current) {
+      latencyInputRef.current.focus();
+      latencyInputRef.current.select();
+    }
+  }, [isEditingLatency]);
+
+  const handleBpmClick = () => {
+    setEditingBpm(tempBpm);
+    setIsEditingBpm(true);
+  };
+
+  const handleBpmInputChange = (e) => {
+    const newBpm = parseInt(e.target.value, 10);
+    if (!isNaN(newBpm) && newBpm >= 30 && newBpm <= 240) {
+      setEditingBpm(newBpm);
+    }
+  };
+
+  const handleBpmInputBlur = () => {
+    setIsEditingBpm(false);
+    if (editingBpm !== null) {
+      setTempBpm(editingBpm);
+      setBPM(editingBpm);
+    }
+    setEditingBpm(null);
+  };
+
+  const handleBpmInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setIsEditingBpm(false);
+      setTempBpm(editingBpm);
+      setBPM(editingBpm);
+      setEditingBpm(null);
+    } else if (e.key === 'Escape') {
+      setIsEditingBpm(false);
+      setEditingBpm(null);
+    }
+  };
+
+  useEffect(() => {
+    if (isEditingBpm && bpmInputRef.current) {
+      bpmInputRef.current.focus();
+      bpmInputRef.current.select();
+    }
+  }, [isEditingBpm]);
+
   return (
     <div className="top-controls">
       <div className="button-group">
@@ -237,7 +323,23 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
           <div className="button-group">
             <div className="bpm-control">
               <label htmlFor="bpm-slider">BPM</label>
-              <span className="bpm-value">{tempBpm}</span>
+              {isEditingBpm ? (
+                <input
+                  ref={bpmInputRef}
+                  type="number"
+                  value={editingBpm !== null ? editingBpm : tempBpm}
+                  onChange={handleBpmInputChange}
+                  onBlur={handleBpmInputBlur}
+                  onKeyDown={handleBpmInputKeyDown}
+                  min="30"
+                  max="240"
+                  className="bpm-input"
+                />
+              ) : (
+                <span className="bpm-value" onClick={handleBpmClick}>
+                  {tempBpm}
+                </span>
+              )}
               <input
                 id="bpm-slider"
                 type="range"
@@ -257,7 +359,23 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
           <div className="button-group">
             <div className="latency-control">
               <label htmlFor="latency-slider">Latency</label>
-              <span className="latency-value">{latency} ms</span>
+              {isEditingLatency ? (
+                <input
+                  ref={latencyInputRef}
+                  type="number"
+                  value={editingLatency !== null ? editingLatency : latency}
+                  onChange={handleLatencyInputChange}
+                  onBlur={handleLatencyInputBlur}
+                  onKeyDown={handleLatencyInputKeyDown}
+                  min="0"
+                  max="3000"
+                  className="latency-input"
+                />
+              ) : (
+                <span className="latency-value" onClick={handleLatencyClick}>
+                  {latency} ms
+                </span>
+              )}
               <input
                 id="latency-slider"
                 type="range"
