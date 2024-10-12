@@ -4,6 +4,7 @@ import { useFireproof } from 'use-fireproof';
 import { v4 as uuidv4 } from 'uuid';
 import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
 import './TopControls.css';
+import LatencyMeasurer from './LatencyMeasurer';
 
 const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack }) => {
   const ts = useTimesync();
@@ -24,6 +25,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const bpmInputRef = useRef(null);
   const [editingBpm, setEditingBpm] = useState(null);
   const [editingLatency, setEditingLatency] = useState(null);
+  const [showLatencyMeasurer, setShowLatencyMeasurer] = useState(false);
 
   useEffect(() => {
     // Load or generate device ID
@@ -215,8 +217,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   };
 
   const handleMeasureLatency = () => {
-    // This function will be implemented later
-    console.log('Measure latency');
+    setShowLatencyMeasurer(true);
   };
 
   const handleLatencyClick = () => {
@@ -298,6 +299,12 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       bpmInputRef.current.select();
     }
   }, [isEditingBpm]);
+
+  const handleLatencyMeasured = (measuredLatency) => {
+    setLatency(Math.round(measuredLatency));
+    updateDeviceDoc(Math.round(measuredLatency));
+    setShowLatencyMeasurer(false);
+  };
 
   return (
     <div className="top-controls">
@@ -404,6 +411,12 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
             </button>
           </div>
         </>
+      )}
+      {showLatencyMeasurer && (
+        <LatencyMeasurer
+          onClose={() => setShowLatencyMeasurer(false)}
+          onLatencyMeasured={handleLatencyMeasured}
+        />
       )}
     </div>
   );
