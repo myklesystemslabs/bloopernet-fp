@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
-import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms} from '../audioUtils';
+import { v4 as uuidv4 } from 'uuid';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
 import './TopControls.css';
 
 const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack }) => {
@@ -14,7 +15,31 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   // Fetch the current BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
+  const [latency, setLatency] = useState(0);
+  const [deviceId, setDeviceId] = useState(null);
+  const latencyTimeoutRef = useRef(null);
 
+  useEffect(() => {
+    // Load or generate device ID
+    let storedDeviceId = localStorage.getItem('deviceId');
+    if (!storedDeviceId) {
+      storedDeviceId = uuidv4();
+      localStorage.setItem('deviceId', storedDeviceId);
+    }
+    setDeviceId(storedDeviceId);
+
+    // Load stored latency
+    const storedLatency = localStorage.getItem('latency');
+    if (storedLatency !== null) {
+      const parsedLatency = parseInt(storedLatency, 10);
+      setLatency(parsedLatency);
+      setLatencyCompensation(parsedLatency);
+    } else {
+      const initialLatency = getLatencyCompensation();
+      setLatency(initialLatency);
+      localStorage.setItem('latency', initialLatency.toString());
+    }
+  }, []);
 
   useEffect(() => {
     if (bpmDoc) {
@@ -111,9 +136,9 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     let update = { 
       playing: newPlayingState, 
       bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
-      //lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
-   //   lastChanged_ms: ts.now() + getHeadStart_ms()
-      lastChanged_ms: ts.now()
+      lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
+      //   lastChanged_ms: ts.now() + getHeadStart_ms()
+      //   lastChanged_ms: ts.now()
     };
     if (newPlayingState){
       update.prevQuarterBeats = 0;
@@ -139,6 +164,53 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     const newMutedState = !muted;
     setMasterMute(newMutedState);
     setMuted(newMutedState);
+  };
+
+  const updateDeviceDoc = async (newLatency) => {
+    if (!ts) {
+      console.warn("no timesync");
+      return;
+    }
+    const deviceDoc = {
+      _id: deviceId,
+      type: 'device',
+      latency: newLatency,
+      timestamp: ts.now()
+    };
+
+    try {
+      await database.put(deviceDoc);
+      // Update localStorage after successful database update
+      localStorage.setItem('latency', newLatency.toString());
+    } catch (error) {
+      console.error('Error updating device document:', error);
+    }
+  };
+
+  const handleLatencyChange = (e) => {
+    const newLatency = parseInt(e.target.value, 10);
+    setLatency(newLatency);
+    setLatencyCompensation(newLatency);
+
+    if (latencyTimeoutRef.current) {
+      clearTimeout(latencyTimeoutRef.current);
+    }
+
+    latencyTimeoutRef.current = setTimeout(() => {
+      updateDeviceDoc(newLatency);
+    }, 500);
+  };
+
+  const handleLatencyChangeComplete = () => {
+    if (latencyTimeoutRef.current) {
+      clearTimeout(latencyTimeoutRef.current);
+    }
+    updateDeviceDoc(latency);
+  };
+
+  const handleMeasureLatency = () => {
+    // This function will be implemented later
+    console.log('Measure latency');
   };
 
   return (
@@ -177,6 +249,29 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
                 min="30"
                 max="240"
               />
+            </div>
+          </div>
+
+          <div className="button-group-break"></div>
+
+          <div className="button-group">
+            <div className="latency-control">
+              <label htmlFor="latency-slider">Latency</label>
+              <span className="latency-value">{latency} ms</span>
+              <input
+                id="latency-slider"
+                type="range"
+                className="latency-slider"
+                value={latency}
+                onChange={handleLatencyChange}
+                onMouseUp={handleLatencyChangeComplete}
+                onTouchEnd={handleLatencyChangeComplete}
+                min="0"
+                max="3000"
+              />
+              <button className="measure-latency-button" onClick={handleMeasureLatency}>
+                Measure
+              </button>
             </div>
           </div>
 
