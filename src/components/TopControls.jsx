@@ -147,17 +147,25 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
           {muted ? 'Unmute' : 'Mute'}
         </button>
-        {!muted && (
+        {(!muted || isExpert) && (
           <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
         )}
-        {isExpert && (
-          <>
+      </div>
+      {isExpert && (
+        <>
+          <div className="button-group">
             <button className="control-button play-pause-button" onClick={togglePlay}>
               {playing ? 'Pause' : 'Play'}
             </button>
-            <button className="control-button clear-button" onClick={handleClear}>Clear</button>
+            {/* <button className="control-button clear-button" onClick={handleClear}>Clear</button> */}
+          </div>
+
+          <div className="button-group-break"></div>
+
+          <div className="button-group">
             <div className="bpm-control">
               <label htmlFor="bpm-slider">BPM</label>
+              <span className="bpm-value">{tempBpm}</span>
               <input
                 id="bpm-slider"
                 type="range"
@@ -169,17 +177,21 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
                 min="30"
                 max="240"
               />
-              <span className="bpm-value">{tempBpm}</span>
             </div>
-            <button className="control-button theme-toggle" onClick={toggleTheme}>
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
+          </div>
+
+          <div className="button-group-break"></div>
+
+          <div className="button-group">
             <button className="control-button visuals-toggle" onClick={toggleVisuals}>
               {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
             </button>
-          </>
-        )}
-      </div>
+            <button className="control-button theme-toggle" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
