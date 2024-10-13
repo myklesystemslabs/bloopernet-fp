@@ -26,6 +26,8 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [editingBpm, setEditingBpm] = useState(null);
   const [editingLatency, setEditingLatency] = useState(null);
   const [showLatencyMeasurer, setShowLatencyMeasurer] = useState(false);
+  const [microphoneReady, setMicrophoneReady] = useState(false);
+  const streamRef = useRef(null);
 
   useEffect(() => {
     // Load or generate device ID
@@ -216,8 +218,16 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     updateDeviceDoc(latency);
   };
 
-  const handleMeasureLatency = () => {
-    setShowLatencyMeasurer(true);
+  const handleMeasureLatency = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      setMicrophoneReady(true);
+      setShowLatencyMeasurer(true);
+    } catch (err) {
+      console.error('Error accessing microphone:', err);
+      alert('Microphone access denied. Please grant permission and try again.');
+    }
   };
 
   const handleLatencyClick = () => {
@@ -304,6 +314,20 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     setLatency(Math.round(measuredLatency));
     updateDeviceDoc(Math.round(measuredLatency));
     setShowLatencyMeasurer(false);
+    setMicrophoneReady(false);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const handleCloseMeasurer = () => {
+    setShowLatencyMeasurer(false);
+    setMicrophoneReady(false);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
   };
 
   return (
@@ -414,8 +438,10 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       )}
       {showLatencyMeasurer && (
         <LatencyMeasurer
-          onClose={() => setShowLatencyMeasurer(false)}
+          onClose={handleCloseMeasurer}
           onLatencyMeasured={handleLatencyMeasured}
+          microphoneReady={microphoneReady}
+          stream={streamRef.current}
         />
       )}
     </div>
