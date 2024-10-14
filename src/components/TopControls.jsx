@@ -403,6 +403,8 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       </div>
       {isExpert && (
         <>
+          <div className="button-group-break"></div>
+
           <div className="button-group">
             <button className="control-button play-pause-button" onClick={togglePlay}>
               {playing ? 'Pause' : 'Play'}
@@ -410,7 +412,6 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
             {/* <button className="control-button clear-button" onClick={handleClear}>Clear</button> */}
           </div>
 
-          <div className="button-group-break"></div>
 
           <div className="button-group">
             <div className="bpm-control">
