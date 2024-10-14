@@ -29,6 +29,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [microphoneReady, setMicrophoneReady] = useState(false);
   const streamRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [showLatencyControl, setShowLatencyControl] = useState(false);
 
   useEffect(() => {
     // Load or generate device ID
@@ -381,6 +382,10 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     return options;
   };
 
+  const toggleLatencyControl = () => {
+    setShowLatencyControl(!showLatencyControl);
+  };
+
   return (
     <div className="top-controls">
       <div className="button-group">
@@ -391,7 +396,9 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
           {muted ? 'Unmute' : 'Mute'}
         </button>
         {(!muted || isExpert) && (
-          <button className="control-button show-delay">Delay</button>
+          <button className={`control-button show-delay ${showLatencyControl ? 'active' : ''}`} onClick={toggleLatencyControl}>
+            Delay
+          </button>
         )}
       </div>
       {isExpert && (
@@ -442,30 +449,34 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
           <div className="button-group-break"></div>
 
           <div className="button-group">
-            <div className="latency-control">
-              <label htmlFor="latency-control">Delay:</label>
-                <select
-                  id="latency-select"
-                  value={latency}
-                  onChange={handleLatencySelectChange}
-                  className="latency-select"
-                >
-                  {generateLatencyOptions()}
-                </select>
-                <button onClick={decrementLatency} className="latency-button">-</button>
-                <button onClick={incrementLatency} className="latency-button">+</button>
-            </div>
-          </div>
-
-          <div className="button-group-break"></div>
-
-          <div className="button-group">
             <button className="control-button visuals-toggle" onClick={toggleVisuals}>
               {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
             </button>
             <button className="control-button theme-toggle" onClick={toggleTheme}>
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
+          </div>
+        </>
+      )}
+
+      {showLatencyControl && (
+        <>
+          <div className="button-group-break"></div>
+
+          <div className="button-group">
+            <div className="latency-control">
+              <label htmlFor="latency-control">Delay:</label>
+              <select
+                id="latency-select"
+                value={latency}
+                onChange={handleLatencySelectChange}
+                className="latency-select"
+            >
+                {generateLatencyOptions()}
+              </select>
+              <button onClick={decrementLatency} className="latency-button">-</button>
+              <button onClick={incrementLatency} className="latency-button">+</button>
+            </div>
           </div>
         </>
       )}
