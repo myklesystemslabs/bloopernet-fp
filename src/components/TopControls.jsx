@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
 import { v4 as uuidv4 } from 'uuid';
-import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer, getDefaultLatency, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
 import './TopControls.css';
 import LatencyMeasurer from './LatencyMeasurer';
 
-const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack }) => {
+const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack, headStart_ms, updateLocalLatency }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
@@ -44,12 +44,14 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       const parsedLatency = parseInt(storedLatency, 10);
       setLatency(parsedLatency);
       setLatencyCompensation(parsedLatency);
+      updateLocalLatency(parsedLatency); // Add this line
     } else {
       const initialLatency = getLatencyCompensation();
       setLatency(initialLatency);
       localStorage.setItem('latency', initialLatency.toString());
+      updateLocalLatency(initialLatency); // Add this line
     }
-  }, []);
+  }, [updateLocalLatency]); // Add updateLocalLatency to the dependency array
 
   useEffect(() => {
     if (bpmDoc) {
@@ -146,7 +148,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     let update = { 
       playing: newPlayingState, 
       bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
-      lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
+      lastChanged_ms: newPlayingState ? ts.now() + headStart_ms : ts.now()
       //   lastChanged_ms: ts.now() + getHeadStart_ms()
       //   lastChanged_ms: ts.now()
     };
@@ -201,6 +203,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     const newLatency = parseInt(e.target.value, 10);
     setLatency(newLatency);
     setLatencyCompensation(newLatency);
+    updateLocalLatency(newLatency); // Add this line
 
     if (latencyTimeoutRef.current) {
       clearTimeout(latencyTimeoutRef.current);
@@ -216,6 +219,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       clearTimeout(latencyTimeoutRef.current);
     }
     updateDeviceDoc(latency);
+    updateLocalLatency(latency); // Add this line
   };
 
   const handleMeasureLatency = async () => {
@@ -311,8 +315,10 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   }, [isEditingBpm]);
 
   const handleLatencyMeasured = (measuredLatency) => {
-    setLatency(Math.round(measuredLatency));
-    updateDeviceDoc(Math.round(measuredLatency));
+    const roundedLatency = Math.round(measuredLatency);
+    setLatency(roundedLatency);
+    updateDeviceDoc(roundedLatency);
+    updateLocalLatency(roundedLatency); // Add this line
     setShowLatencyMeasurer(false);
     setMicrophoneReady(false);
     if (streamRef.current) {
@@ -389,7 +395,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
 
           <div className="button-group">
             <div className="latency-control">
-              <label htmlFor="latency-slider">Latency</label>
+              <label htmlFor="latency-slider">Latency:</label>
               {isEditingLatency ? (
                 <input
                   ref={latencyInputRef}
@@ -403,9 +409,11 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
                   className="latency-input"
                 />
               ) : (
-                <span className="latency-value" onClick={handleLatencyClick}>
-                  {latency} ms
-                </span>
+                <>
+                  <span className="latency-value" onClick={handleLatencyClick}>
+                    {latency}ms
+                  </span>
+                </>
               )}
               <input
                 id="latency-slider"
@@ -415,12 +423,15 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
                 onChange={handleLatencyChange}
                 onMouseUp={handleLatencyChangeComplete}
                 onTouchEnd={handleLatencyChangeComplete}
-                min="0"
-                max="3000"
+                min={Math.ceil(getDefaultLatency())}
+                max="2000"
               />
               <button className="measure-latency-button" onClick={handleMeasureLatency}>
                 Measure
               </button>
+              <span className="headstart-value">
+                preroll: {headStart_ms}ms
+              </span>
             </div>
           </div>
 

@@ -9,7 +9,7 @@ import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
 
-const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
+const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack, headStart_ms }) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
   const { database, useLiveQuery } = useFireproof(dbName);
@@ -324,6 +324,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           onVolumeChange={handleVolumeChange}
           initialVolume={trackSettings[instrumentRecord._id]?.volume || 100}
           onTrackChange={handleTrackChange}
+          headStart_ms={headStart_ms}
         />
       ))}
     </div>

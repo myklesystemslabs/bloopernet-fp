@@ -112,6 +112,7 @@ const LatencyMeasurer = ({ onClose, onLatencyMeasured, microphoneReady, stream }
       <button onClick={startMeasurement} disabled={isRunning || !microphoneReady}>
         {isRunning ? `Measuring... ${progress.toFixed(0)}%` : 'Start Measurement'}
       </button>
+      <button onClick={onClose}>Close</button>
       {result && (
         <div>
           <p>Average latency: {result.average.toFixed(2)} ms</p>
@@ -123,7 +124,6 @@ const LatencyMeasurer = ({ onClose, onLatencyMeasured, microphoneReady, stream }
           </ul>
         </div>
       )}
-      <button onClick={onClose}>Close</button>
     </div>
   );
 };

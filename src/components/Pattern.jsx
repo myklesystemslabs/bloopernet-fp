@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useFireproof } from 'use-fireproof';
 import BeatButton from './BeatButton';
 import InstrumentInfo from './InstrumentInfo';
-import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getHeadStart_ms, getMasterGainNode, playSoundBuffer } from '../audioUtils';
+import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getMasterGainNode, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
 import TrackForm from './TrackForm';
@@ -32,6 +32,7 @@ const Pattern = ({
   onVolumeChange, // Add this prop
   initialVolume, // Add this prop
   onTrackChange, // Add this prop
+  headStart_ms,
 }) => {
   const { database } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -135,8 +136,8 @@ const Pattern = ({
     const quarterBeatDuration_ms = quarterBeatDuration_s * 1000;
 
     // Calculate the next quarter beat start time
-    const nextQuarterBeatNumber = Math.ceil((elapsedTimesyncTime_ms + getHeadStart_ms()) / quarterBeatDuration_ms);
-    const nextQuarterBeatStart_ms = nextQuarterBeatNumber * quarterBeatDuration_ms;
+    const nextQuarterBeatNumber = Math.ceil((elapsedTimesyncTime_ms + headStart_ms) / quarterBeatDuration_ms);
+    const nextQuarterBeatStart_ms = (nextQuarterBeatNumber * quarterBeatDuration_ms) + headStart_ms;
 
     // relative time to schedule
     const relativeTimeToSchedule_ms = nextQuarterBeatStart_ms - elapsedTimesyncTime_ms;
