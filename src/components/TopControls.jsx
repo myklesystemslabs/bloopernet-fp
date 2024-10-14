@@ -28,6 +28,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [showLatencyMeasurer, setShowLatencyMeasurer] = useState(false);
   const [microphoneReady, setMicrophoneReady] = useState(false);
   const streamRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Load or generate device ID
@@ -68,6 +69,17 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   useEffect(() => {
     // Load the silence buffer when the component mounts
     loadSilenceBuffer();
+  }, []);
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // Adjust this breakpoint as needed
+    };
+
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+
+    return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
   const handleClear = async () => {
@@ -336,14 +348,50 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     }
   };
 
+  const handleLatencySelectChange = (e) => {
+    const newLatency = parseInt(e.target.value, 10);
+    updateLatency(newLatency);
+  };
+
+  const updateLatency = (newLatency) => {
+    setLatency(newLatency);
+    handleLatencyChange({ target: { value: newLatency } });
+    handleLatencyChangeComplete();
+  };
+
+  const incrementLatency = () => {
+    const newLatency = Math.min(latency + 5, 1000);
+    updateLatency(newLatency);
+  };
+
+  const decrementLatency = () => {
+    const newLatency = Math.max(latency - 5, 0);
+    updateLatency(newLatency);
+  };
+
+  const generateLatencyOptions = () => {
+    const options = [];
+    for (let i = 0; i <= 1000; i += 5) {
+      options.push(
+        <option key={i} value={i}>
+          {i} ms
+        </option>
+      );
+    }
+    return options;
+  };
+
   return (
     <div className="top-controls">
       <div className="button-group">
+        {(!muted || isExpert) && (
+          <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
+        )}
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
           {muted ? 'Unmute' : 'Mute'}
         </button>
         {(!muted || isExpert) && (
-          <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
+          <button className="control-button show-delay">Delay</button>
         )}
       </div>
       {isExpert && (
@@ -395,43 +443,17 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
 
           <div className="button-group">
             <div className="latency-control">
-              <label htmlFor="latency-slider">Latency:</label>
-              {isEditingLatency ? (
-                <input
-                  ref={latencyInputRef}
-                  type="number"
-                  value={editingLatency !== null ? editingLatency : latency}
-                  onChange={handleLatencyInputChange}
-                  onBlur={handleLatencyInputBlur}
-                  onKeyDown={handleLatencyInputKeyDown}
-                  min="0"
-                  max="3000"
-                  className="latency-input"
-                />
-              ) : (
-                <>
-                  <span className="latency-value" onClick={handleLatencyClick}>
-                    {latency}ms
-                  </span>
-                </>
-              )}
-              <input
-                id="latency-slider"
-                type="range"
-                className="latency-slider"
-                value={latency}
-                onChange={handleLatencyChange}
-                onMouseUp={handleLatencyChangeComplete}
-                onTouchEnd={handleLatencyChangeComplete}
-                min={Math.ceil(getDefaultLatency())}
-                max="2000"
-              />
-              <button className="measure-latency-button" onClick={handleMeasureLatency}>
-                Measure
-              </button>
-              <span className="headstart-value">
-                preroll: {headStart_ms}ms
-              </span>
+              <label htmlFor="latency-control">Delay:</label>
+                <select
+                  id="latency-select"
+                  value={latency}
+                  onChange={handleLatencySelectChange}
+                  className="latency-select"
+                >
+                  {generateLatencyOptions()}
+                </select>
+                <button onClick={decrementLatency} className="latency-button">-</button>
+                <button onClick={incrementLatency} className="latency-button">+</button>
             </div>
           </div>
 
