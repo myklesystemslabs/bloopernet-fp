@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useFireproof } from 'use-fireproof';
-import BeatButton from './BeatButton';
 import InstrumentInfo from './InstrumentInfo';
 import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getMasterGainNode, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
@@ -29,9 +28,9 @@ const Pattern = ({
   dbName,
   masterMuted,
   existingTrackNames,
-  onVolumeChange, // Add this prop
-  initialVolume, // Add this prop
-  onTrackChange, // Add this prop
+  onVolumeChange,
+  initialVolume,
+  onTrackChange,
   headStart_ms,
 }) => {
   const { database } = useFireproof(dbName);
@@ -214,18 +213,20 @@ const Pattern = ({
       const groupButtons = [];
       for (let j = 0; j < 4; j++) {
         const index = i * 4 + j;
+        const isActive = beats[`beat-${instrumentId}-${index}`] || false;
+        const isCurrent = playing && index === currentQuarterBeat;
+        const isStarting = elapsedQuarterBeats < 0 && playing;
+        const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
+        
         groupButtons.push(
-          <BeatButton 
+          <div
             key={`${instrumentId}-${index}`}
-            instrumentId={instrumentId}
-            beatIndex={index} 
-            isActive={beats[`beat-${instrumentId}-${index}`] || false}
-            isCurrent={playing && index === currentQuarterBeat}
-            isStarting={elapsedQuarterBeats < 0 && playing}
-            updateBeat={updateBeat}
-            className={`beat-group-${i}`}
-            isSilent={isMuted || (anyTrackSoloed && !isSolo) || masterMuted}
-          />
+            className={`beat-button ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isSilent ? 'silent' : ''} ${isStarting ? 'starting' : ''}`}
+            onClick={() => updateBeat(instrumentId, index, !isActive)}
+            data-id={`beat-${instrumentId}-${index}`}
+          >
+            <div className="beat-button-inner" />
+          </div>
         );
       }
       groups.push(
