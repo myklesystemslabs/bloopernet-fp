@@ -91,11 +91,11 @@ function App() {
   const [headStart_ms, setHeadStart_ms] = useState(0);
   const [localLatency, setLocalLatency] = useState(getDefaultLatency());
   // Fetch all device records to calculate head start based on the max latency
-  const devices = useLiveQuery('type', { key: 'device' });
+  // const devices = useLiveQuery('type', { key: 'device' });
 
   useEffect(() => {
-    if (devices) {
-      const maxLatency = Math.max(...devices.docs.map(device => device.latency || 0));
+    // if (devices) {
+    //   const maxLatency = Math.max(...devices.docs.map(device => device.latency || 0));
 
       // This is the sophisticated way where the faster devices slow down to the speed of the slowest device
       // const newHeadStart = Math.floor(Math.max(maxLatency - localLatency))+minimumHeadStart_ms ;
@@ -106,8 +106,9 @@ function App() {
 
       setHeadStart_ms(newHeadStart);
       // console.log("newHeadStart: ", newHeadStart);
-    }
-  }, [devices, localLatency]);
+    // }
+  //}, [devices, localLatency]);
+  }, [localLatency]);
 
   const updateLocalLatency = useCallback((newLatency) => {
     setLocalLatency(newLatency);
