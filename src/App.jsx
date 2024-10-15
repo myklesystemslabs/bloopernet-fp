@@ -96,8 +96,14 @@ function App() {
   useEffect(() => {
     if (devices) {
       const maxLatency = Math.max(...devices.docs.map(device => device.latency || 0));
-      const newHeadStart = Math.floor(Math.max(maxLatency - localLatency))+minimumHeadStart_ms ;
-      // const newHeadStart = localLatency+minimumHeadStart_ms ;
+
+      // This is the sophisticated way where the faster devices slow down to the speed of the slowest device
+      // const newHeadStart = Math.floor(Math.max(maxLatency - localLatency))+minimumHeadStart_ms ;
+      // unfortunately the other clients can stutter a lot when that happen, so one user can screw everyone else.
+
+      // This is the simpler way where the slow devices slow down even more, to sync with the previous step
+      const newHeadStart = localLatency+minimumHeadStart_ms ;
+
       setHeadStart_ms(newHeadStart);
       // console.log("newHeadStart: ", newHeadStart);
     }
