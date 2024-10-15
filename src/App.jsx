@@ -179,7 +179,12 @@ function App() {
   let beats = {};
   const result = useLiveQuery('type', { key: 'beat' });
   result.rows.forEach(row => {
-    beats[row.doc._id] = row.doc.isActive;
+    // it looks like after we delete an instrument, a null row can appear here.
+    if (row.doc) {
+      beats[row.doc._id] = row.doc.isActive;
+    } else {
+      console.log("null record in live query", row);
+    }
   });
 
   //////////////////////////////////////////////////////////////////////////////
