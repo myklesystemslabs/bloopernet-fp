@@ -189,3 +189,16 @@ body, html {
 		margin-bottom: 5px;
 	}
 }
+
+.wake-lock-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.wake-lock-indicator .material-icons {
+  font-size: 1rem;
+}

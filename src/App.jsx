@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import AudioMotionVisualizer from './components/AudioMotionVisualizer';
-import { getAnalyserNode, getDefaultLatency } from './audioUtils';
+import { getAnalyserNode, getDefaultLatency, isMasterMuted, setMasterMute } from './audioUtils';
 import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'
@@ -10,6 +10,7 @@ import TopControls from './components/TopControls';
 import { TimesyncProvider } from './TimesyncContext';
 import './App.css';
 import InviteButton from './components/InviteButton';
+import { useWakeLock } from 'react-screen-wake-lock';
 
 
 const partyCxs = new Map(); // q: why is this global?
@@ -218,6 +219,49 @@ function App() {
     setShowNewTrackForm(false);
   };
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Wake lock:
+  //////////////////////////////////////////////////////////////////////////////
+  const { isSupported, request, release } = useWakeLock();
+  const [wakeLock, setWakeLock] = useState(null);
+
+  const [masterMuted, setMasterMuted] = useState(isMasterMuted());
+
+  const handleMuteToggle = useCallback((newMutedState) => {
+    setMasterMuted(newMutedState);
+    setMasterMute(newMutedState);
+  }, []);
+
+  const bpmResult = useLiveQuery('type', { key: 'bpm' });
+  const bpmDoc = bpmResult.rows[0]?.doc;
+  const playing = bpmDoc?.playing;
+
+  useEffect(() => {
+    const handleWakeLock = async () => {
+      if (isSupported && playing && !masterMuted) {
+        try {
+          await request('screen');
+          setWakeLock(true);
+        } catch (err) {
+          console.error('Failed to request wake lock:', err);
+        }
+      } else if (wakeLock) {
+        release();
+        setWakeLock(null);
+      }
+    };
+
+    handleWakeLock();
+  }, [isSupported, request, release, playing, masterMuted]);
+
+  useEffect(() => {
+    return () => {
+      if (wakeLock) {
+        release();
+      }
+    };
+  }, [wakeLock, release]);
+
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
@@ -237,6 +281,8 @@ function App() {
             onAddTrack={handleAddTrack}
             headStart_ms={headStart_ms}
             updateLocalLatency={updateLocalLatency}
+            masterMuted={masterMuted}
+            onMuteToggle={handleMuteToggle}
           />
           <PatternSet 
             dbName={dbName} 
@@ -245,9 +291,15 @@ function App() {
             showNewTrackForm={showNewTrackForm}
             onCancelNewTrack={handleCancelNewTrack}
             headStart_ms={headStart_ms}
+            masterMuted={masterMuted}
           />
 					<AppInfo />
           <InviteButton />
+          {isSupported && wakeLock && (
+            <div className="wake-lock-indicator">
+              <span className="material-icons">visibility</span>
+            </div>
+          )}
         </div>
       </div>
     </TimesyncProvider>

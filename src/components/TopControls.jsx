@@ -2,20 +2,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
 import { v4 as uuidv4 } from 'uuid';
-import { setMasterMute, isMasterMuted, loadSilenceBuffer, getDefaultLatency, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
+import { loadSilenceBuffer, getDefaultLatency, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
 import './TopControls.css';
 import LatencyMeasurer from './LatencyMeasurer';
 
-const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack, headStart_ms, updateLocalLatency }) => {
+const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack, headStart_ms, updateLocalLatency, masterMuted, onMuteToggle }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(isMasterMuted()); // Start muted
   const timeoutRef = useRef(null);
   const { database, useLiveQuery } = useFireproof(dbName);
-  // Fetch the current BPM document from the database
-  const bpmResult = useLiveQuery('type', { key: 'bpm' });
-  const bpmDoc = bpmResult.rows[0]?.doc;
   const [latency, setLatency] = useState(0);
   const [deviceId, setDeviceId] = useState(null);
   const latencyTimeoutRef = useRef(null);
@@ -30,6 +26,10 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const streamRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showLatencyControl, setShowLatencyControl] = useState(false);
+
+  // Fetch the current BPM document from the database
+  const bpmResult = useLiveQuery('type', { key: 'bpm' });
+  const bpmDoc = bpmResult.rows[0]?.doc;
 
   useEffect(() => {
     // Load or generate device ID
@@ -61,11 +61,6 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       setPlaying(bpmDoc.playing);
     }
   }, [bpmDoc]);
-
-  useEffect(() => {
-    // Set initial volume
-    setMasterMute(muted);
-  }, [muted]);
 
   useEffect(() => {
     // Load the silence buffer when the component mounts
@@ -186,9 +181,8 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
 
 
   const toggleMute = async () => {
-    const newMutedState = !muted;
-    setMasterMute(newMutedState);
-    setMuted(newMutedState);
+    const newMutedState = !masterMuted;
+    onMuteToggle(newMutedState);
   };
 
   const updateDeviceDoc = async (newLatency) => {
@@ -389,13 +383,13 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   return (
     <div className="top-controls">
       <div className="button-group">
-        {(!muted || isExpert) && (
+        {(!masterMuted || isExpert) && (
           <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
         )}
-        <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
-          {muted ? 'Unmute' : 'Mute'}
+        <button className={`control-button mute-button ${masterMuted ? 'muted' : ''}`} onClick={toggleMute}>
+          {masterMuted ? 'Unmute' : 'Mute'}
         </button>
-        {(!muted || isExpert) && (
+        {(!masterMuted || isExpert) && (
           <button className={`control-button show-delay ${showLatencyControl ? 'active' : ''}`} onClick={toggleLatencyControl}>
             Delay
           </button>
