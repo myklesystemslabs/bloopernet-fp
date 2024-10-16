@@ -294,43 +294,45 @@ const Pattern = ({
           {!showChangeForm && (
             <div className="volume-control">
               <label htmlFor={`volume-${instrumentId}`}>Volume: {volume}%</label>
-            <input
-              type="range"
-              id={`volume-${instrumentId}`}
-              min="0"
-              max="200"
-              value={volume}
-              onChange={handleVolumeChange}
+              <input
+                type="range"
+                id={`volume-${instrumentId}`}
+                min="0"
+                max="200"
+                value={volume}
+                onChange={handleVolumeChange}
               />
             </div>
           )}
           {!showChangeForm && (
             <button className="track-change-button" onClick={() => setShowChangeForm(true)} role="button" tabIndex="0">Change Sample</button>
           )}
-          <button 
-            className="track-delete-button" 
-            onClick={handleDeleteOrRevert} 
-            role="button" 
-            tabIndex="0"
+          {showChangeForm && (
+            <TrackForm
+              onSubmit={(newData) => {
+                onTrackChange(instrumentId, newData);
+                setShowChangeForm(false);
+              }}
+              onCancel={() => setShowChangeForm(false)}
+              existingTrackNames={existingTrackNames}
+              initialData={{ name: instrument, audioFile, mimeType, referenceType }}
+            />
+          )}
+          {!showChangeForm && (
+            <button 
+              className="track-delete-button" 
+              onClick={handleDeleteOrRevert} 
+              role="button" 
+              tabIndex="0"
           >
-            {isDefaultInstrument ? 'Revert' : 'Delete'}
-          </button>
+              {isDefaultInstrument ? 'Revert' : 'Delete'}
+            </button>
+          )}
         </div>
       ) : (
         <div className="beat-buttons">
           {renderBeatButtons()}
         </div>
-      )}
-      {showChangeForm && (
-        <TrackForm
-          onSubmit={(newData) => {
-            onTrackChange(instrumentId, newData);
-            setShowChangeForm(false);
-          }}
-          onCancel={() => setShowChangeForm(false)}
-          existingTrackNames={existingTrackNames}
-          initialData={{ name: instrument, audioFile, mimeType, referenceType }}
-        />
       )}
       {showDeleteConfirm && (
         <div className="delete-confirm">

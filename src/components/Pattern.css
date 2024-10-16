@@ -42,6 +42,18 @@
 .info-panel {
   display: flex;
   gap: 10px;
+  /* measured from the beat group */
+  width: 720px;
+  height: 60px;
+}
+
+.round-button,
+.pattern-controls .mute-button,
+.pattern-controls .solo-button,
+.pattern-controls .info-button {
+  border-radius: 50%;
+  width: 30px;
+  height: 30px; 
 }
 
 .instrument-button,
@@ -175,6 +187,10 @@
   border-color: #0074D9;
   color: #0074D9;
   font-style: italic;
+}
+
+.pattern-controls .info-button .material-icons {
+  font-size: 32px;
 }
 
 .info-button.active {
