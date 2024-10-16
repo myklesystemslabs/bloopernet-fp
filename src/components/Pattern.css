@@ -35,8 +35,8 @@
 .pattern {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  width: 100%;
+  margin-bottom: 10px;
+  /* width: 100%; */
 }
 
 .info-panel {
