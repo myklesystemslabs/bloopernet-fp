@@ -5,9 +5,11 @@
 }
 
 [data-theme="dark"] {
-  --beat-inactive: #FF6B35;
+  --beat-inactive: #966659;
   --beat-active: #FF8C42;
   --beat-current: #FFA500;
+  --beat-current-active: #FFD700;
+  --beat-starting: #6d1745;
 }
 
 .beat-button {
@@ -16,10 +18,14 @@
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  /* transition: all 0.2s ease; */
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.beat-button.active.starting {
+  background-color: var(--beat-starting) !important;
 }
 
 .beat-button::after {
@@ -28,7 +34,7 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  /* transition: all 0.2s ease; */
 }
 
 .beat-button:not(.active)::after {
@@ -41,11 +47,26 @@
   background-color: var(--beat-active);
 }
 
+.beat-button.current.active::after {
+  background-color: var(--beat-current-active) !important;
+}
+
 .beat-button.current {
   box-shadow: 0 0 0 3px var(--beat-current);
+}
+.beat-button.current.starting {
+  box-shadow: 0 0 0 3px var(--beat-starting);
 }
 
 /* Ensure active beats stand out */
 .beat-button.active::after {
   background-color: var(--beat-active) !important;
+}
+
+.beat-button.silent {
+  opacity: 0.5;
+}
+
+.beat-button.silent.active {
+  background-color: #999; /* A gray color for active but silent buttons */
 }

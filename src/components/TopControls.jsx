@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
-import { setMasterMute, isMasterMuted, loadSilenceBuffer } from '../audioUtils';
+import { setMasterMute, isMasterMuted, loadSilenceBuffer, getHeadStart_ms} from '../audioUtils';
 import './TopControls.css';
 
-const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
+const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visualsEnabled, onAddTrack }) => {
   const ts = useTimesync();
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
@@ -15,7 +15,6 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
 
-  
 
   useEffect(() => {
     if (bpmDoc) {
@@ -52,14 +51,14 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
     }
   };
 
-  // Remove the handleNuke function
-
   const updateBPMDoc = async (updates) => {
-    const timestamp = ts.now();
+    if (!ts){console.warn("no timesync"); return;}
+    if (! updates.lastChanged_ms) {
+      updates.lastChanged_ms = ts.now();
+    }
     const newBpmDoc = {
       ...bpmDoc,
       ...updates,
-      lastChanged_ms: timestamp
     };
 
     try {
@@ -73,7 +72,16 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
     }
   };
 
+  const setBPM = (bpm) => {
+    // calculate prevQuarterBeats based on bpm and current time
+    const currentTime_ms = ts.now();
+    const elapsedTime_ms = currentTime_ms - bpmDoc.lastChanged_ms;
+    const elapsedQuarterBeats = Math.floor((elapsedTime_ms / 60000) * bpm * 4) + bpmDoc?.prevQuarterBeats || 0;
+    updateBPMDoc({ bpm: bpm, prevQuarterBeats: elapsedQuarterBeats });
+  };
 
+
+  // update the BPM after the user has stopped moving the slider for 500ms, even if they don't release it yet.
   const handleBpmChange = (e) => {
     const newBpm = Math.max(30, Math.min(240, parseInt(e.target.value, 10)));
     setTempBpm(newBpm);
@@ -83,43 +91,53 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
     }
 
     timeoutRef.current = setTimeout(() => {
-      updateBPMDoc({ bpm: newBpm });
+      setBPM(newBpm);
     }, 500);
   };
 
+  // update the BPM immediately if the user releases the slider
   const handleBpmChangeComplete = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    updateBPMDoc({ bpm: tempBpm });
+    setBPM(tempBpm);
   };
 
   const togglePlay = useCallback(() => {
+    if (!ts){console.warn("no timesync"); return;}
     if (!ts) return;
     const newPlayingState = !playing;
     setPlaying(newPlayingState);
-    updateBPMDoc({ 
+    let update = { 
       playing: newPlayingState, 
       bpm: bpmDoc ? bpmDoc.bpm : tempBpm,
-      lastChanged_ms: ts.now() // Reset the start time when playing is toggled to true // todo: change to lastChanged_ms
-    });
+      //lastChanged_ms: newPlayingState ? ts.now() + getHeadStart_ms() : ts.now()
+   //   lastChanged_ms: ts.now() + getHeadStart_ms()
+      lastChanged_ms: ts.now()
+    };
+    if (newPlayingState){
+      update.prevQuarterBeats = 0;
+    }
+    updateBPMDoc(update);
   }, [playing, bpmDoc, tempBpm, ts]);
 
-  useEffect(() => {
-    if (!ts) return;
-    const timer = setTimeout(() => {
-      if (!playing) {
-        togglePlay();
-      }
-    }, Math.floor(Math.random() * 4000) + 1000);
+  // // autoplay if paused at startup:
+  // useEffect(() => {
+  //   if (!ts){console.warn("no timesync"); return;}
+  //   if (!ts) return;
+  //   const timer = setTimeout(() => {
+  //     if (!playing) {
+  //       togglePlay();
+  //     }
+  //   }, Math.floor(Math.random() * 4000) + 1000);
 
-    return () => clearTimeout(timer);
-  }, [ts, togglePlay]);
+  //   return () => clearTimeout(timer);
+  // }, [ts]);
 
 
   const toggleMute = async () => {
     const newMutedState = !muted;
-    await setMasterMute(newMutedState);
+    setMasterMute(newMutedState);
     setMuted(newMutedState);
   };
 
@@ -129,6 +147,9 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
         <button className={`control-button mute-button ${muted ? 'muted' : ''}`} onClick={toggleMute}>
           {muted ? 'Unmute' : 'Mute'}
         </button>
+        {!muted && (
+          <button className="control-button add-track" onClick={onAddTrack}>Add Track</button>
+        )}
         {isExpert && (
           <>
             <button className="control-button play-pause-button" onClick={togglePlay}>
@@ -152,6 +173,9 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme }) => {
             </div>
             <button className="control-button theme-toggle" onClick={toggleTheme}>
               {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+            <button className="control-button visuals-toggle" onClick={toggleVisuals}>
+              {visualsEnabled ? 'Disable Visuals' : 'Enable Visuals'}
             </button>
           </>
         )}

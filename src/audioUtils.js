@@ -6,20 +6,41 @@ let masterGainNode = null;
 let silenceBuffer = null;
 let isMuted = true;
 let latencyCompensation = 0;
+let analyserNode = null;
+let headStart_ms = 200; 
 
 export const getAudioContext = () => {
   if (!audioContext) {
     console.log("getAudioContext");
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const options = {latencyHint: 'interactive'};
+    audioContext = new (window.AudioContext || window.webkitAudioContext)(options);
     clock = new WAAClock(audioContext);
     clock.start();
     
     // Create master gain node
     masterGainNode = audioContext.createGain();
-    masterGainNode.connect(audioContext.destination);
     masterGainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start muted
+
+      // Create and configure the AnalyserNode
+    analyserNode = audioContext.createAnalyser();
+    analyserNode.fftSize = 1024; // Adjust as needed
+    analyserNode.smoothingTimeConstant = 0.8; // Adjust for desired smoothing
+
+    // Insert the analyserNode after the master gain node
+    masterGainNode.connect(analyserNode);
+    analyserNode.connect(audioContext.destination);
+
   }
   return audioContext;
+};
+
+export const getDefaultLatency = () => {
+  const ac = getAudioContext();
+  var latency = 0;
+  latency += (ac.baseLatency || 0);   // should be defined everywhere but you never know
+  latency += (ac.outputLatency || 0); // undefined on safari
+ // console.log("device latency: ", latency, "ms");
+  return latency;
 };
 
 export const loadSilenceBuffer = async () => {
@@ -45,13 +66,13 @@ export const setMasterMute = async (mute) => {
       await loadSilenceBuffer();
     }
     if (silenceBuffer) {
-      playSoundBuffer(silenceBuffer);
+      playSoundBuffer(silenceBuffer, masterGainNode);
     }
 
     // Short delay to allow audio to initialize
     setTimeout(() => {
       masterGainNode.gain.setValueAtTime(1, ctx.currentTime);
-    }, 50);
+    }, 200);
   } else { // Muting
     masterGainNode.gain.setValueAtTime(0, ctx.currentTime);
   }
@@ -59,16 +80,26 @@ export const setMasterMute = async (mute) => {
 
 export const isMasterMuted = () => isMuted;
 
-export const loadSound = async (url) => {
-  const response = await fetch(url);
+export const loadSound = async (source) => {
+  // const audioContext = getAudioContext();
+  let response;
+  if (typeof source === 'string') {
+    // It's a URL
+    response = await fetch(source);
+  } else if (source instanceof Blob) {
+    // It's a Blob (for database-stored files)
+    response = new Response(source);
+  } else {
+    throw new Error('Invalid audio source');
+  }
   const arrayBuffer = await response.arrayBuffer();
   return await getAudioContext().decodeAudioData(arrayBuffer);
 };
 
-export const playSoundBuffer = (buffer) => {
+export const playSoundBuffer = (buffer, outputNode) => {
   const source = getAudioContext().createBufferSource();
   source.buffer = buffer;
-  source.connect(masterGainNode);
+  source.connect(outputNode);
   source.start();
 };
 
@@ -86,18 +117,22 @@ export const initLatencyCompensation = () => {
   latencyCompensation = storedLatency ? parseFloat(storedLatency) : 0;
 };
 
-export const scheduleBeat = (soundBuffer, audioTime_s) => {
-  let ctxtime = getAudioContext().currentTime;
-  const adjustedTime = audioTime_s + (latencyCompensation / 1000);
+export const scheduleBeat = (sourceNode, audioTime_s) => {
+  const ctx = getAudioContext();
+  if (!ctx) {return;}
+  if (ctx.state != 'running') {
+   console.warn("audio context not running");
+    return;
+  }
+
+  let ctxtime = ctx.currentTime;
+  const adjustedTime = audioTime_s;
   
   if (adjustedTime > ctxtime) {
     const event = clock.callbackAtTime(() => {
-      const source = getAudioContext().createBufferSource();
-      source.buffer = soundBuffer;
-      source.connect(masterGainNode);
-      source.start();
+      sourceNode.start();
     }, adjustedTime);
-    console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
+    //console.log("scheduled beat ", adjustedTime - ctxtime, " seconds from now");
     return event;
   } else {
     console.warn("too late to schedule beat");
@@ -106,4 +141,20 @@ export const scheduleBeat = (soundBuffer, audioTime_s) => {
 
 export const clearScheduledEvents = (events) => {
   events.forEach(event => event.clear());
+};
+
+export const getAnalyserNode = () => {
+  return analyserNode;
+}
+
+export const getHeadStart_ms = () => {
+  return headStart_ms - getDefaultLatency();
+};
+
+export const getHeadStart_s = () => {
+  return getHeadStart_ms() / 1000;
+};
+
+export const getMasterGainNode = () => {
+  return masterGainNode;
 };

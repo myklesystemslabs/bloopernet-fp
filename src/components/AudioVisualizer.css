@@ -1,0 +1,13 @@
+.audio-visualizer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1; /* Change this from -1 to 1 */
+  pointer-events: none;
+}
+
+.audio-visualizer canvas {
+  display: block;
+}

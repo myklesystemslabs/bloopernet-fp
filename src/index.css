@@ -109,8 +109,8 @@ html, body, #root {
 
 .app {
   flex: 1;
-  width: 100%;
-  max-width: 1000px;
+  /* width: 100%; */
+  /* max-width: 1000px; */
   margin: auto;
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -146,7 +146,7 @@ button {
 /* Styles for larger screens */
 @media (min-width: 768px) {
   #root {
-    padding: 20px 0;
+    /* padding: 20px 0; */
     justify-content: center;
   }
 
@@ -159,5 +159,7 @@ button {
 @media (max-width: 767px) {
   .app {
     border-radius: 0; /* Remove border radius on mobile for full-bleed effect */
+		overflow-y: auto;
+		padding: 0px;
   }
 }

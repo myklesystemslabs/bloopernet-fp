@@ -20,9 +20,9 @@ export const TimesyncProvider = ({ children, partyKitHost }) => {
       });
       tsInstance.sync();
 
-      tsInstance.on('sync', (state) => {
-        console.log("timesync sync ", state);
-      });
+      // tsInstance.on('sync', (state) => {
+      //   console.log("timesync sync ", state);
+      // });
 
       setTs(tsInstance);
     };
