@@ -300,7 +300,7 @@ const Pattern = ({
               type="range"
               id={`volume-${instrumentId}`}
               min="0"
-              max="200"
+              max="800"
               value={volume}
               onChange={handleVolumeChange}
               />
