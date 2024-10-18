@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useFireproof } from 'use-fireproof';
-import InstrumentInfo from './InstrumentInfo';
 import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getMasterGainNode, playSoundBuffer } from '../audioUtils';
 import { useTimesync } from '../TimesyncContext';
 import './Pattern.css';
