@@ -199,7 +199,7 @@ function App() {
             showNewTrackForm={showNewTrackForm}
             onCancelNewTrack={handleCancelNewTrack}
           />
-          <AppInfo />
+          <AppInfo connectionUrl={connectionUrl} />
           <InviteButton />
         </div>
       </div>
@@ -224,13 +224,8 @@ export default RoutedApp;
 const AppInfo = ({ connectionUrl }) => (
   <footer>
     <p>
-      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
+      <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a target="_blank" href={connectionUrl || "https://fireproof.storage"}>Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
     </p>
-    {connectionUrl && (
-      <p>
-        <a href={connectionUrl}>Inspect database</a>
-      </p>
-    )}
     <img src="/qr.png" width="200" style={{ marginTop: '10px' }} />
   </footer>
 );
