@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import AudioMotionVisualizer from './components/AudioMotionVisualizer';
 import { getAnalyserNode, getDefaultLatency, isMasterMuted, setMasterMute } from './utils';
 import { useFireproof } from 'use-fireproof';
-import { ConnectS3 } from '@fireproof/aws'
-import { ConnectPartyKit } from '@fireproof/partykit'
+import { connect } from '@fireproof/cloud';
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
 import { TimesyncProvider } from './TimesyncContext';
@@ -13,43 +13,46 @@ import InviteButton from './components/InviteButton';
 import { useWakeLock } from 'react-screen-wake-lock';
 
 
-const partyCxs = new Map(); // q: why is this global?
-function partykitS3({ name, blockstore }, partyHost, refresh) {
-  if (!name) throw new Error('database name is required')
-  if (!refresh && partyCxs.has(name)) {
-    return partyCxs.get(name)
-  }
-  const s3conf = { // example values, replace with your own by deploying https://github.com/fireproof-storage/valid-cid-s3-bucket
-    upload: import.meta.env.VITE_S3PARTYUP,
-    download: import.meta.env.VITE_S3PARTYDOWN
-  }
-  const s3conn = new ConnectS3(s3conf.upload, s3conf.download, '')
-  s3conn.connectStorage(blockstore)
-
-  if (!partyHost) {
-    console.warn('partyHost not provided, using localhost:1999')
-    partyHost = 'http://localhost:1999'
-  }
-  const connection = new ConnectPartyKit({ name, host: partyHost })
-  connection.connectMeta(blockstore)
-  partyCxs.set(name, connection)
-  return connection
-}
-
+// const partyCxs = new Map(); // q: why is this global?
+// function partykitS3({ name, blockstore }, partyHost, refresh) {
+//   if (!name) throw new Error('database name is required')
+//   if (!refresh && partyCxs.has(name)) {
+//     return partyCxs.get(name)
+//   }
+//   const s3conf = { // example values, replace with your own by deploying https://github.com/fireproof-storage/valid-cid-s3-bucket
+//     upload: import.meta.env.VITE_S3PARTYUP,
+//     download: import.meta.env.VITE_S3PARTYDOWN
+//   }
+//   const s3conn = new ConnectS3(s3conf.upload, s3conf.download, '')
+//   s3conn.connectStorage(blockstore)
+//
+//   if (!partyHost) {
+//     console.warn('partyHost not provided, using localhost:1999')
+//     partyHost = 'http://localhost:1999'
+//   }
+//   const connection = new ConnectPartyKit({ name, host: partyHost })
+//   connection.connectMeta(blockstore)
+//   partyCxs.set(name, connection)
+//   return connection
+// }
+//
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
   const { jamId } = useParams();
   const navigate = useNavigate();
   
+  const [connectionUrl, setConnectionUrl] = useState('');
+
   //////////////////////////////////////////////////////////////////////////////
   // URL path & Jam ID handling:
   //////////////////////////////////////////////////////////////////////////////
+
   // Truncate, sanitize, and validate jamId
   const truncatedJamId = jamId ? jamId.slice(0, 40) : '';
   const sanitizedJamId = truncatedJamId.replace(/[^a-zA-Z0-9-]/g, '');
   const isValidJamId = /^[a-zA-Z0-9-]+$/.test(sanitizedJamId);
-  
+
   useEffect(() => {
     // Redirect to root if jamId is invalid or if the path is neither root nor a valid /jam/* path
     if ((jamId && !isValidJamId) || (jamId != sanitizedJamId) || (sanitizedJamId && window.location.pathname !== '/' && !window.location.pathname.startsWith('/jam/'))) {
@@ -69,21 +72,29 @@ function App() {
   // Database setup:
   //////////////////////////////////////////////////////////////////////////////
   // Construct the database name based on the jamId
-  const firstPathSegment = document.location.pathname.split('/')[1];  
+  const firstPathSegment = document.location.pathname.split('/')[1];
   const baseDbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
   const dbName = isValidJamId ? `${baseDbName}-${sanitizedJamId}` : baseDbName;
 
   // connect to the database
   const { database, useLiveQuery } = useFireproof(dbName);
+  
+  useEffect(() => {
+    const connectToDatabase = async () => {
+      const connection = await connect(database, `bloop.${dbName}`);
+      setConnectionUrl(connection.dashboardUrl.toString());
+    };
+    connectToDatabase();
+  }, [database, dbName]);
 
-  // connect to the partykit server
-  const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
-  if (partyKitHost) {
-    const connection = partykitS3(database, partyKitHost);
-    console.log("Connection", connection);
-  } else {
-    console.warn("No connection");
-  }
+  // // connect to the partykit server
+  // const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
+  // if (partyKitHost) {
+  //   const connection = partykitS3(database, partyKitHost);
+  //   console.log("Connection", connection);
+  // } else {
+  //   console.warn("No connection");
+  // }
 
   //////////////////////////////////////////////////////////////////////////////
   // Head start calculation for latency compensation:
@@ -156,6 +167,8 @@ function App() {
   };
 
   const longPressHandlers = handleLongPress(toggleExpert);
+
+  const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -255,16 +268,16 @@ function App() {
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
-        <AudioMotionVisualizer 
-          analyserNode={analyserNode} 
-          visualsEnabled={visualsEnabled} 
+        <AudioMotionVisualizer
+          analyserNode={analyserNode}
+          visualsEnabled={visualsEnabled}
         />
         <div className="app-content" style={{ height: 'var(--app-height)' }}>
           <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
-          <TopControls 
-            dbName={dbName} 
-            isExpert={isExpert} 
-            toggleTheme={toggleTheme} 
+          <TopControls
+            dbName={dbName}
+            isExpert={isExpert}
+            toggleTheme={toggleTheme}
             theme={theme}
             toggleVisuals={toggleVisuals}
             visualsEnabled={visualsEnabled}
@@ -282,7 +295,7 @@ function App() {
             headStart_ms={headStart_ms}
             masterMuted={masterMuted}
           />
-					<AppInfo />
+          <AppInfo connectionUrl={connectionUrl} />
           <InviteButton />
           {isSupported && wakeLock && (
             <div className="wake-lock-indicator">
@@ -309,10 +322,19 @@ function RoutedApp() {
 
 export default RoutedApp;
 
-const AppInfo = () => (
+const AppInfo = ({ connectionUrl }) => (
   <footer>
     <p>
       <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
     </p>
+    {connectionUrl && (
+      <p>
+        <a href={connectionUrl}>Inspect database</a>
+      </p>
+    )}
   </footer>
 );
+
+AppInfo.propTypes = {
+  connectionUrl: PropTypes.string.isRequired
+};
