@@ -44,7 +44,6 @@
   display: flex;
   align-items: center;
   margin-bottom: 10px;
-  /* width: 100%; */
 }
 
 .info-panel {
@@ -179,13 +178,26 @@
 
 /* Styles for mobile screens */
 @media (max-width: 767px) {
+	.pattern { 
+		width: 100%;
+	}
+
+	.pattern-controls .info-button,
 	.pattern-controls .mute-button,
 	.pattern-controls .solo-button {
   min-width: 40px;
+	min-height: 40px;
 	margin-bottom: 5px;
 	}
 	.pattern-controls .solo-button {	
 		margin-right: 0px;
+	}
+	.pattern-controls .info-button .material-icons {
+		font-size: 45px !important;
+	}
+	
+	.info-panel {
+		width: auto;
 	}
 }
 

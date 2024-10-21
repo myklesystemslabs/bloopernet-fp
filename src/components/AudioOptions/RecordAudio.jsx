@@ -24,7 +24,7 @@ function getSupportedMimeType() {
   return null; // No supported type found
 }
 
-const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
+const RecordAudio = ({ onDataChange, onCancel, existingTrackNames, initialData }) => {
   const [name, setName] = useState(initialData ? initialData.name : '');
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
@@ -104,6 +104,7 @@ const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
   return (
     <form onSubmit={handleSubmit} className="record-audio">
       <input 
+        className="name-field"
         type="text" 
         value={name} 
         onChange={(e) => setName(e.target.value)} 
@@ -128,6 +129,9 @@ const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
       )}
       <button type="submit" disabled={!audioURL || !name} className="audio-option-button" aria-label="Add Track">
         <span className="material-icons">check</span>
+      </button>
+      <button onClick={onCancel} className="cancel-button" role="button" tabIndex="0" aria-label="Cancel">
+        <span className="material-icons">close</span>
       </button>
     </form>
   );
