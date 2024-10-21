@@ -276,7 +276,6 @@ const PatternSet = ({
           mimeType={instrumentRecord.mimeType}
           referenceType={instrumentRecord.referenceType}
           _files={instrumentRecord._files}
-          beats={beats}
           updateBeat={updateBeat}
           bpmDoc={bpmDoc}
           elapsedQuarterBeats={elapsedQuarterBeats}

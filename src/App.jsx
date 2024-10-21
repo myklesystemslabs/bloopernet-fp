@@ -184,17 +184,6 @@ function App() {
   // Beat state:
   //////////////////////////////////////////////////////////////////////////////
 
-  let beats = {};
-  const result = useLiveQuery('type', { key: 'beat' });
-  result.rows.forEach(row => {
-    // it looks like after we delete an instrument, a null row can appear here.
-    if (row.doc) {
-      beats[row.doc._id] = row.doc.isActive;
-    } else {
-      console.log("null record in live query", row);
-    }
-  });
-
   //////////////////////////////////////////////////////////////////////////////
   // Analyser node:
   //////////////////////////////////////////////////////////////////////////////  
@@ -262,6 +251,7 @@ function App() {
     };
   }, [wakeLock, release]);
 
+  console.log("App rerender");
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
       <div className={`app ${theme}`}>
@@ -287,7 +277,6 @@ function App() {
           <PatternSet 
             dbName={dbName} 
             instruments={instruments} 
-            beats={beats} 
             showNewTrackForm={showNewTrackForm}
             onCancelNewTrack={handleCancelNewTrack}
             headStart_ms={headStart_ms}

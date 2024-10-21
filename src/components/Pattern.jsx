@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useFireproof } from 'use-fireproof';
 import { loadSound, clearScheduledEvents, getAudioContext, scheduleBeat, getMasterGainNode, playSoundBuffer } from '../utils';
 import { useTimesync } from '../TimesyncContext';
@@ -12,7 +12,6 @@ const Pattern = ({
   mimeType,
   referenceType,
   _files,
-  beats, 
   updateBeat, 
   bpmDoc, 
   elapsedQuarterBeats, 
@@ -32,7 +31,7 @@ const Pattern = ({
   onTrackChange,
   headStart_ms,
 }) => {
-  const { database } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [soundBuffer, setSoundBuffer] = useState(null);
@@ -53,6 +52,34 @@ const Pattern = ({
 
   const bpm = bpmDoc?.bpm || 120;
   const playing = bpmDoc?.playing || false;
+
+  // Fetch beats for this specific pattern
+  const beatResult = useLiveQuery('type', { 
+    key: 'beat',
+  });
+  // const beatResult = useLiveQuery(
+  //   doc => {
+  //     if (doc.type === 'beat' && doc._id.startsWith(`beat-${instrumentId}-`)) return doc._id
+  //   }
+  // );
+  // const beatResult = useLiveQuery('type', { 
+  //   key: 'beat',
+  //   include_docs: true,
+  //   startkey: `beat-${instrumentId}-`,
+  //   endkey: `beat-${instrumentId}-\ufff0`
+  // });
+
+  const beats = useMemo(() => {
+    const beatMap = {};
+    beatResult.rows.forEach(row => {
+      if (row.doc) {
+        beatMap[row.doc._id] = row.doc.isActive;
+      } else {
+        console.log("null record in live query", row);
+      }
+    });
+    return beatMap;
+  }, [beatResult]);
 
   useEffect(() => {
     const loadAudio = async () => {
