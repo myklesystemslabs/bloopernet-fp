@@ -4,7 +4,7 @@ import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
 import TrackForm from './TrackForm';
 import { v4 as uuidv4 } from 'uuid';
-import { isMasterMuted } from '../audioUtils'; // Add this import
+import { isMasterMuted } from '../utils'; // Add this import
 import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];

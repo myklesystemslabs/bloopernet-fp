@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTimesync } from '../TimesyncContext';
 import { useFireproof } from 'use-fireproof';
 import { v4 as uuidv4 } from 'uuid';
-import { loadSilenceBuffer, getDefaultLatency, setLatencyCompensation, getLatencyCompensation } from '../audioUtils';
+import { loadSilenceBuffer, getDefaultLatency, setLatencyCompensation, getLatencyCompensation } from '../utils';
 import './TopControls.css';
 import LatencyMeasurer from './LatencyMeasurer';
 

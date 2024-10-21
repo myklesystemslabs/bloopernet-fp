@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import AudioMotionVisualizer from './components/AudioMotionVisualizer';
-import { getAnalyserNode, getDefaultLatency, isMasterMuted, setMasterMute } from './audioUtils';
+import { getAnalyserNode, getDefaultLatency, isMasterMuted, setMasterMute } from './utils';
 import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'

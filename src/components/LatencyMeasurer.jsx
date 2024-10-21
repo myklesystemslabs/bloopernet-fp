@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getAudioContext, getMasterGainNode } from '../audioUtils';
+import { getAudioContext, getMasterGainNode } from '../utils';
 import './LatencyMeasurer.css';
 
 const LatencyMeasurer = ({ onClose, onLatencyMeasured, microphoneReady, stream }) => {
