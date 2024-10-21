@@ -9,12 +9,18 @@ import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
 
-const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
+const PatternSet = ({ 
+  dbName, 
+  beats, 
+  showNewTrackForm, 
+  onCancelNewTrack, 
+  headStart_ms, 
+  masterMuted,
+}) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
   const { database, useLiveQuery } = useFireproof(dbName);
   const [trackSettings, setTrackSettings] = useState({});
-  const [masterMuted, setMasterMuted] = useState(isMasterMuted());
 
   // Fetch the BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
@@ -235,21 +241,6 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
     });
   }, [instrumentRecords]);
 
-  useEffect(() => {
-    const checkMasterMute = () => {
-      setMasterMuted(isMasterMuted());
-    };
-
-    // Check initially
-    checkMasterMute();
-
-    // Set up an interval to check periodically
-    const intervalId = setInterval(checkMasterMute, 100); // Check every 100ms
-
-    // Clean up the interval on component unmount
-    return () => clearInterval(intervalId);
-  }, []);
-
   const handleTrackChange = useCallback(async (instrumentId, newData) => {
     try {
       const doc = {
@@ -274,15 +265,6 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
 
       const putResponse = await database.put(doc);
 
-      // // Update the local state
-      // setInstrumentRecords(prev => ({
-      //   ...prev,
-      //   [instrumentId]: {
-      //     ...prev[instrumentId],
-      //     ...doc,
-      //     _id: putResponse.id,
-      //   }
-      // }));
     } catch (error) {
       console.error('Error updating track:', error);
     }
@@ -324,6 +306,7 @@ const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
           onVolumeChange={handleVolumeChange}
           initialVolume={trackSettings[instrumentRecord._id]?.volume || 100}
           onTrackChange={handleTrackChange}
+          headStart_ms={headStart_ms}
         />
       ))}
     </div>

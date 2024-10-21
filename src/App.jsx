@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useParams, useNavigate } from 'react-router-dom';
 import AudioMotionVisualizer from './components/AudioMotionVisualizer';
-import { getAnalyserNode } from './audioUtils';
+import { getAnalyserNode, getDefaultLatency, isMasterMuted, setMasterMute } from './audioUtils';
 import { useFireproof } from 'use-fireproof';
 import { ConnectS3 } from '@fireproof/aws'
 import { ConnectPartyKit } from '@fireproof/partykit'
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
-//import LatencySlider from './components/LatencySlider';
 import { TimesyncProvider } from './TimesyncContext';
-import { initLatencyCompensation } from './audioUtils';
 import './App.css';
 import InviteButton from './components/InviteButton';
-import { v4 as uuidv4 } from 'uuid';
+import { useWakeLock } from 'react-screen-wake-lock';
 
-const partyCxs = new Map();
+
+const partyCxs = new Map(); // q: why is this global?
 function partykitS3({ name, blockstore }, partyHost, refresh) {
   if (!name) throw new Error('database name is required')
   if (!refresh && partyCxs.has(name)) {
@@ -37,11 +36,15 @@ function partykitS3({ name, blockstore }, partyHost, refresh) {
   return connection
 }
 
+
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
   const { jamId } = useParams();
   const navigate = useNavigate();
   
+  //////////////////////////////////////////////////////////////////////////////
+  // URL path & Jam ID handling:
+  //////////////////////////////////////////////////////////////////////////////
   // Truncate, sanitize, and validate jamId
   const truncatedJamId = jamId ? jamId.slice(0, 40) : '';
   const sanitizedJamId = truncatedJamId.replace(/[^a-zA-Z0-9-]/g, '');
@@ -54,12 +57,68 @@ function App() {
     }
   }, [jamId, isValidJamId, navigate]);
 
+  useEffect(() => {
+    // If there's a path that's not / or /jam/*, redirect to /
+    if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/jam/')) {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Database setup:
+  //////////////////////////////////////////////////////////////////////////////
   // Construct the database name based on the jamId
   const firstPathSegment = document.location.pathname.split('/')[1];  
   const baseDbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
   const dbName = isValidJamId ? `${baseDbName}-${sanitizedJamId}` : baseDbName;
 
+  // connect to the database
   const { database, useLiveQuery } = useFireproof(dbName);
+
+  // connect to the partykit server
+  const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
+  if (partyKitHost) {
+    const connection = partykitS3(database, partyKitHost);
+    console.log("Connection", connection);
+  } else {
+    console.warn("No connection");
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Head start calculation for latency compensation:
+  //////////////////////////////////////////////////////////////////////////////
+  let minimumHeadStart_ms = 200; 
+  const [headStart_ms, setHeadStart_ms] = useState(0);
+  const [localLatency, setLocalLatency] = useState(getDefaultLatency());
+  // Fetch all device records to calculate head start based on the max latency
+  // const devices = useLiveQuery('type', { key: 'device' });
+
+  useEffect(() => {
+    // if (devices) {
+    //   const maxLatency = Math.max(...devices.docs.map(device => device.latency || 0));
+
+      // This is the sophisticated way where the faster devices slow down to the speed of the slowest device
+      // const newHeadStart = Math.floor(Math.max(maxLatency - localLatency))+minimumHeadStart_ms ;
+      // unfortunately the other clients can stutter a lot when that happen, so one user can screw everyone else.
+
+      // This is the simpler way where the slow devices slow down even more, to sync with the previous step
+      const newHeadStart = localLatency+minimumHeadStart_ms ;
+
+      setHeadStart_ms(newHeadStart);
+      // console.log("newHeadStart: ", newHeadStart);
+    // }
+  //}, [devices, localLatency]);
+  }, [localLatency]);
+
+  const updateLocalLatency = useCallback((newLatency) => {
+    setLocalLatency(newLatency);
+  }, []);
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  // UI state:
+  //////////////////////////////////////////////////////////////////////////////
 
   const [isExpert, setIsExpert] = useState(false);
   const [theme, setTheme] = useState('dark');
@@ -98,32 +157,6 @@ function App() {
 
   const longPressHandlers = handleLongPress(toggleExpert);
 
-  const partyKitHost = import.meta.env.VITE_REACT_APP_PARTYKIT_HOST;
-
-  useEffect(() => {
-    initLatencyCompensation();
-  }, []);
-
-  useEffect(() => {
-    // If there's a path that's not / or /jam/*, redirect to /
-    if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/jam/')) {
-      navigate('/', { replace: true });
-    }
-  }, [navigate]);
-
-  if (partyKitHost) {
-    const connection = partykitS3(database, partyKitHost);
-    console.log("Connection", connection);
-  } else {
-    console.warn("No connection");
-  }
-
-  let beats = {};
-  const result = useLiveQuery('type', { key: 'beat' });
-  result.rows.forEach(row => {
-    beats[row.doc._id] = row.doc.isActive;
-  });
-
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -139,12 +172,6 @@ function App() {
     return () => window.removeEventListener('resize', appHeight);
   }, []);
 
-  useEffect(() => {
-    // Get the analyserNode from audioUtils
-    const analyser = getAnalyserNode();
-    setAnalyserNode(analyser);
-  }, []);
-
   const toggleVisuals = () => {
     setVisualsEnabled(prev => {
       const newState = !prev;
@@ -153,34 +180,35 @@ function App() {
     });
   };
 
-  const [newInstrumentId, setNewInstrumentId] = useState(null);
+  //////////////////////////////////////////////////////////////////////////////
+  // Beat state:
+  //////////////////////////////////////////////////////////////////////////////
 
-  const [tempTrack, setTempTrack] = useState(null);
+  let beats = {};
+  const result = useLiveQuery('type', { key: 'beat' });
+  result.rows.forEach(row => {
+    // it looks like after we delete an instrument, a null row can appear here.
+    if (row.doc) {
+      beats[row.doc._id] = row.doc.isActive;
+    } else {
+      console.log("null record in live query", row);
+    }
+  });
 
-  const addTemporaryTrack = useCallback(() => {
-    const newId = `temp-${uuidv4()}`;
-    setTempTrack({
-      id: newId,
-      name: '',
-      audioFile: ''
-    });
+  //////////////////////////////////////////////////////////////////////////////
+  // Analyser node:
+  //////////////////////////////////////////////////////////////////////////////  
+  // TODO: audiovisualizer should fetch this itself
+  useEffect(() => {
+    // Get the analyserNode from audioUtils
+    const analyser = getAnalyserNode();
+    setAnalyserNode(analyser);
   }, []);
 
-  // const handleAddTrack = useCallback(async () => {
-  //   const newName = 'New Instrument';
-  //   const newId = `${newName.toLowerCase()}-${uuidv4()}`;
-  //   const newInstrument = {
-  //     _id: newId,
-  //     type: 'instrument',
-  //     name: newName,
-  //     createdAt: new Date().toISOString(),
-  //     audioFile: '/sounds/default.wav' // You might want to change this to a default sound
-  //   };
 
-  //   await database.put(newInstrument);
-  //   setNewInstrumentId(newId);
-  // }, [database]);
-
+  //////////////////////////////////////////////////////////////////////////////
+  // New track form (pass click from TopControls to ui in PatternSet):
+  //////////////////////////////////////////////////////////////////////////////  
   const [showNewTrackForm, setShowNewTrackForm] = useState(false);
 
   const handleAddTrack = () => {
@@ -190,6 +218,49 @@ function App() {
   const handleCancelNewTrack = () => {
     setShowNewTrackForm(false);
   };
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Wake lock:
+  //////////////////////////////////////////////////////////////////////////////
+  const { isSupported, request, release } = useWakeLock();
+  const [wakeLock, setWakeLock] = useState(null);
+
+  const [masterMuted, setMasterMuted] = useState(isMasterMuted());
+
+  const handleMuteToggle = useCallback((newMutedState) => {
+    setMasterMuted(newMutedState);
+    setMasterMute(newMutedState);
+  }, []);
+
+  const bpmResult = useLiveQuery('type', { key: 'bpm' });
+  const bpmDoc = bpmResult.rows[0]?.doc;
+  const playing = bpmDoc?.playing;
+
+  useEffect(() => {
+    const handleWakeLock = async () => {
+      if (isSupported && playing && !masterMuted) {
+        try {
+          await request('screen');
+          setWakeLock(true);
+        } catch (err) {
+          console.error('Failed to request wake lock:', err);
+        }
+      } else if (wakeLock) {
+        release();
+        setWakeLock(null);
+      }
+    };
+
+    handleWakeLock();
+  }, [isSupported, request, release, playing, masterMuted]);
+
+  useEffect(() => {
+    return () => {
+      if (wakeLock) {
+        release();
+      }
+    };
+  }, [wakeLock, release]);
 
   return (
     <TimesyncProvider partyKitHost={partyKitHost}>
@@ -208,20 +279,27 @@ function App() {
             toggleVisuals={toggleVisuals}
             visualsEnabled={visualsEnabled}
             onAddTrack={handleAddTrack}
+            headStart_ms={headStart_ms}
+            updateLocalLatency={updateLocalLatency}
+            masterMuted={masterMuted}
+            onMuteToggle={handleMuteToggle}
           />
           <PatternSet 
             dbName={dbName} 
             instruments={instruments} 
             beats={beats} 
-            newInstrumentId={newInstrumentId}
-            setNewInstrumentId={setNewInstrumentId}
-            tempTrack={tempTrack}
-            setTempTrack={setTempTrack}
             showNewTrackForm={showNewTrackForm}
             onCancelNewTrack={handleCancelNewTrack}
+            headStart_ms={headStart_ms}
+            masterMuted={masterMuted}
           />
 					<AppInfo />
           <InviteButton />
+          {isSupported && wakeLock && (
+            <div className="wake-lock-indicator">
+              <span className="material-icons">visibility</span>
+            </div>
+          )}
         </div>
       </div>
     </TimesyncProvider>

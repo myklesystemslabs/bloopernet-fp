@@ -14,12 +14,23 @@ const ONOMATOPOEIC_WORDS = [
   "Smack", "Swoosh", "Taps", "Whack", "Whoop", "Yelp", "Boing"
 ];
 
+function getSupportedMimeType() {
+  const types = ['audio/webm', 'audio/ogg', 'audio/wav', 'audio/mp4'];
+  for (let type of types) {
+    if (MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return null; // No supported type found
+}
+
 const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
   const [name, setName] = useState(initialData ? initialData.name : '');
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState('');
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const mimeType = useRef(getSupportedMimeType());
 
   const generateInstrumentName = () => {
     // Pick a random word from the list
@@ -55,14 +66,17 @@ const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
   const startRecording = async () => {
     audioChunksRef.current = [];
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorderRef.current = new MediaRecorder(stream);
+    mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: mimeType.current });
     mediaRecorderRef.current.ondataavailable = (event) => {
       audioChunksRef.current.push(event.data);
     };
     mediaRecorderRef.current.onstop = () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+      const audioBlob = new Blob(audioChunksRef.current, { type: mimeType.current });
       const audioUrl = URL.createObjectURL(audioBlob);
       setAudioURL(audioUrl);
+    };
+    mediaRecorderRef.current.onerror = (event) => {
+      console.error('MediaRecorder error:', event.error);
     };
     mediaRecorderRef.current.start();
     setIsRecording(true);
@@ -81,8 +95,8 @@ const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
       fetch(audioURL)
         .then(res => res.blob())
         .then(blob => {
-          const file = new File([blob], `${name}.wav`, { type: 'audio/wav' });
-          onDataChange(file, 'audio/wav', 'database', name);
+          const file = new File([blob], `${name}.${mimeType.current.split('/')[1]}`, { type: mimeType.current });
+          onDataChange(file, mimeType.current, 'database', name);
         });
     }
   };
@@ -106,7 +120,11 @@ const RecordAudio = ({ onDataChange, existingTrackNames, initialData }) => {
         </button>
       )}
       {audioURL && (
-        <audio src={audioURL} controls />
+        <audio 
+          src={audioURL} 
+          controls 
+          onError={(e) => console.error('Audio playback error:', e)} 
+        />
       )}
       <button type="submit" disabled={!audioURL || !name} className="audio-option-button" aria-label="Add Track">
         <span className="material-icons">check</span>

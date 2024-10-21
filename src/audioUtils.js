@@ -147,14 +147,6 @@ export const getAnalyserNode = () => {
   return analyserNode;
 }
 
-export const getHeadStart_ms = () => {
-  return headStart_ms - getDefaultLatency();
-};
-
-export const getHeadStart_s = () => {
-  return getHeadStart_ms() / 1000;
-};
-
 export const getMasterGainNode = () => {
   return masterGainNode;
 };
