@@ -4,7 +4,7 @@ import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
 import TrackForm from './TrackForm';
 import { v4 as uuidv4 } from 'uuid';
-import { isMasterMuted, calculateElapsedQuarterBeats, getDefaultInstrumentId } from '../utils';
+import { calculateElapsedQuarterBeats, getDefaultInstrumentId } from '../utils';
 import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -18,7 +18,6 @@ const PatternSet = ({
   masterMuted,
 }) => {
   const ts = useTimesync();
-  const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
   const { database, useLiveQuery } = useFireproof(dbName);
   const [trackSettings, setTrackSettings] = useState({});
 
@@ -28,9 +27,7 @@ const PatternSet = ({
   
   // Extract BPM, lastChanged, and playing from the query result
   const bpm = bpmDoc?.bpm || 120;
-  const lastChanged_ms = bpmDoc?.lastChanged_ms || (ts ? ts.now() : Date.now()); // Use timesync for default value if available
   const playing = bpmDoc?.playing || false;
-  const prevQuarterBeats = bpmDoc?.prevQuarterBeats || 0;
 
   // Query for all instrument documents
   const instrumentDocs = useLiveQuery('type', { key: 'instrument' });
@@ -63,16 +60,16 @@ const PatternSet = ({
     return Object.values(instrumentRecords).map(record => record.name.toLowerCase());
   }, [instrumentRecords]);
 
-  useEffect(() => {
-    if (playing) {
-      const intervalId = setInterval(() => {
-        setElapsedQuarterBeats(calculateElapsedQuarterBeats(bpmDoc, ts));
-      }, 1000 / (4 * (bpm / 60))); // Update 4x per quarter beat
-      return () => clearInterval(intervalId);
-    } else {
-      setElapsedQuarterBeats(0);
-    }
-  }, [playing, bpmDoc, ts, bpm]);
+  // useEffect(() => {
+  //   if (playing) {
+  //     const intervalId = setInterval(() => {
+  //       setElapsedQuarterBeats(calculateElapsedQuarterBeats(bpmDoc, ts));
+  //     }, 1000 / (4 * (bpm / 60))); // Update 4x per quarter beat
+  //     return () => clearInterval(intervalId);
+  //   } else {
+  //     setElapsedQuarterBeats(0);
+  //   }
+  // }, [playing, bpmDoc, ts, bpm]);
 
   const updateBeat = async (instrumentId, beatIndex, isActive) => {
     const beatId = `beat-${instrumentId}-${beatIndex}`;
@@ -278,7 +275,6 @@ const PatternSet = ({
           _files={instrumentRecord._files}
           updateBeat={updateBeat}
           bpmDoc={bpmDoc}
-          elapsedQuarterBeats={elapsedQuarterBeats}
           isMuted={trackSettings[instrumentRecord._id]?.muted || false}
           isSolo={trackSettings[instrumentRecord._id]?.soloed || false}
           anyTrackSoloed={anyTrackSoloed}
