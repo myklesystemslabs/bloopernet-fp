@@ -150,3 +150,16 @@ export const getAnalyserNode = () => {
 export const getMasterGainNode = () => {
   return masterGainNode;
 };
+
+export function calculateElapsedQuarterBeats(bpmDoc, ts) {
+  if (!ts || !bpmDoc || !bpmDoc.playing) {
+    return 0;
+  }
+
+  const { bpm, lastChanged_ms, prevQuarterBeats } = bpmDoc;
+  const currentTime_ms = ts.now();
+  const elapsedTime_ms = currentTime_ms - lastChanged_ms;
+  const elapsedQuarterBeats = Math.floor((elapsedTime_ms / 60000) * bpm * 4) + prevQuarterBeats;
+
+  return elapsedQuarterBeats;
+}

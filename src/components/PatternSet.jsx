@@ -5,6 +5,7 @@ import Pattern from './Pattern';
 import TrackForm from './TrackForm';
 import { v4 as uuidv4 } from 'uuid';
 import { isMasterMuted } from '../utils'; // Add this import
+import { calculateElapsedQuarterBeats } from '../utils';
 import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -62,29 +63,16 @@ const PatternSet = ({
     return Object.values(instrumentRecords).map(record => record.name.toLowerCase());
   }, [instrumentRecords]);
 
-  const calculateElapsedQuarterBeats = useCallback(() => {
-    if (!ts){console.warn("no timesync"); return 0;}
-    if (!ts || !bpm || !lastChanged_ms || !playing) return 0;
-    const currentTime_ms = ts.now();
-    const elapsedTime_ms = currentTime_ms - lastChanged_ms;
-    const elapsedQuarterBeats = Math.floor((elapsedTime_ms / 60000) * bpm * 4) + prevQuarterBeats; // 60000 ms in a minute, 4 quarter beats per beat
-    // console.log("elapsedQuarterBeats: ", elapsedQuarterBeats);
-    if (elapsedQuarterBeats == 0){
-      console.log("elapsedQuarterBeats is 0");
-    } 
-    return elapsedQuarterBeats;
-  }, [ts, bpm, lastChanged_ms, playing, prevQuarterBeats]);
-
   useEffect(() => {
     if (playing) {
       const intervalId = setInterval(() => {
-        setElapsedQuarterBeats(calculateElapsedQuarterBeats());
-      }, 1000/ (4 * (bpm/60) ) ); // Update 4x per quarter beat
+        setElapsedQuarterBeats(calculateElapsedQuarterBeats(bpmDoc, ts));
+      }, 1000 / (4 * (bpm / 60))); // Update 4x per quarter beat
       return () => clearInterval(intervalId);
     } else {
       setElapsedQuarterBeats(0);
     }
-  }, [playing, calculateElapsedQuarterBeats]);
+  }, [playing, bpmDoc, ts, bpm]);
 
   const updateBeat = async (instrumentId, beatIndex, isActive) => {
     const beatId = `beat-${instrumentId}-${beatIndex}`;
