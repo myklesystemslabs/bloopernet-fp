@@ -163,3 +163,7 @@ export function calculateElapsedQuarterBeats(bpmDoc, ts) {
 
   return elapsedQuarterBeats;
 }
+
+export function getDefaultInstrumentId(instrumentName) {
+  return instrumentName.toLowerCase();
+}

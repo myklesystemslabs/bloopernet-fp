@@ -4,8 +4,7 @@ import { useTimesync } from '../TimesyncContext';
 import Pattern from './Pattern';
 import TrackForm from './TrackForm';
 import { v4 as uuidv4 } from 'uuid';
-import { isMasterMuted } from '../utils'; // Add this import
-import { calculateElapsedQuarterBeats } from '../utils';
+import { isMasterMuted, calculateElapsedQuarterBeats, getDefaultInstrumentId } from '../utils';
 import './PatternSet.css';
 
 const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -40,10 +39,11 @@ const PatternSet = ({
   const instrumentRecords = useMemo(() => {
     const records = {};
     DEFAULT_INSTRUMENTS.forEach(instrument => {
-      records[instrument] = {
-        _id: instrument,
+      const id = getDefaultInstrumentId(instrument);
+      records[id] = {
+        _id: id,
         name: instrument,
-        audioFile: `/sounds/${instrument.toLowerCase()}.wav`,
+        audioFile: `/sounds/${id}.wav`,
         mimeType: 'audio/wav',
         referenceType: 'url'
       };
@@ -171,7 +171,7 @@ const PatternSet = ({
 
   const handleDeleteTrack = useCallback(async (instrumentId) => {
     // Don't allow deletion of default instruments
-    if (DEFAULT_INSTRUMENTS.some(name => name.toLowerCase() === instrumentId)) {
+    if (DEFAULT_INSTRUMENTS.some(name => getDefaultInstrumentId(name) === instrumentId)) {
       alert("Cannot delete default instruments");
       return;
     }
