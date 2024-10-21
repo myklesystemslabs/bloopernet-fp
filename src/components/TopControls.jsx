@@ -27,7 +27,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [isMobile, setIsMobile] = useState(false);
   const [showLatencyControl, setShowLatencyControl] = useState(false);
 
-  // Fetch the current BPM document from the database
+  // Fetch the BPM document
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
 
@@ -97,8 +97,11 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   };
 
   const updateBPMDoc = async (updates) => {
-    if (!ts){console.warn("no timesync"); return;}
-    if (! updates.lastChanged_ms) {
+    if (!ts) {
+      console.warn("no timesync");
+      return;
+    }
+    if (!updates.lastChanged_ms) {
       updates.lastChanged_ms = ts.now();
     }
     const newBpmDoc = {

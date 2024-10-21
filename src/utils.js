@@ -121,7 +121,7 @@ export const scheduleBeat = (sourceNode, audioTime_s) => {
   const ctx = getAudioContext();
   if (!ctx) {return;}
   if (ctx.state != 'running') {
-   console.warn("audio context not running");
+ //  console.warn("audio context not running");
     return;
   }
 
