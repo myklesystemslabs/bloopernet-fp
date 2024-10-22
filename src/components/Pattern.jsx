@@ -39,7 +39,7 @@ const Pattern = ({
   const sourceNodeRef = useRef(null);
   const ts = useTimesync();
   const patternLength = 16; // 16 quarter beats = 4 full beats
-  const scheduledEventsRef = useRef([]);
+  const scheduledEventsRef = useRef(new Array(16).fill(null));
   const timesyncStartTime_ms = useRef(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showChangeForm, setShowChangeForm] = useState(false);
@@ -140,13 +140,21 @@ const Pattern = ({
     let nextBeatNumber = (startBeatNumber) % patternLength;
     for (let i = 0; i < quarterBeatsToSchedule; i++) {
       if (beats[`beat-${instrumentId}-${nextBeatNumber}`]) {
-        const source = ctx.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(gainNodeRef.current);
-
         const beatTime_s = scheduleStart_s + (i * 15 / bpm);
-        const event = scheduleBeat(source, beatTime_s);
-        if (event) events.push(event);
+        const currentTime = ctx.currentTime;
+
+        // Check if the beat is already scheduled and still in the future
+        if (!scheduledEventsRef.current[nextBeatNumber] || scheduledEventsRef.current[nextBeatNumber].deadline <= currentTime) {
+          const source = ctx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(gainNodeRef.current);
+
+          const event = scheduleBeat(source, beatTime_s);
+          if (event) {
+            events.push(event);
+            scheduledEventsRef.current[nextBeatNumber] = event;
+          }
+        }
       }
       nextBeatNumber = (nextBeatNumber + 1) % patternLength;
     }
@@ -181,7 +189,7 @@ const Pattern = ({
 
     // Only schedule if it's in the future
     if (audioTimeToSchedule_s > currentAudioTime_s) {
-      scheduledEventsRef.current = scheduleBeats(
+      const newEvents = scheduleBeats(
         audioTimeToSchedule_s,
         1,
         nextQuarterBeatNumber
@@ -212,8 +220,8 @@ const Pattern = ({
     } else if (!playing && wasPlaying) {
       timesyncStartTime_ms.current = null;
       // Clear any scheduled events when stopping
-      clearScheduledEvents(scheduledEventsRef.current);
-      scheduledEventsRef.current = [];
+      clearScheduledEvents(scheduledEventsRef.current.filter(Boolean));
+      scheduledEventsRef.current = new Array(16).fill(null);
       setWasPlaying(false);
     }
   }, [playing, ts, audioBuffer, beats, instrument, isMuted, isSolo]);
@@ -244,6 +252,7 @@ const Pattern = ({
 
   useEffect(() => {
     let lastUpdateTime = 0;
+    let prevBeat = -1;
 
     const updateAnimation = (timestamp) => {
       if (!playing) return;
@@ -251,9 +260,12 @@ const Pattern = ({
       // Update every 16ms (roughly 60fps)
       if (timestamp - lastUpdateTime > 16) {
         const currentQuarterBeat = calculateElapsedQuarterBeats(bpmDoc, ts);
-        const currentBeat = Math.floor(currentQuarterBeat) % 16;
-        updateBeatButtonClasses(currentBeat);
-        scheduleNextQuarterBeat();
+        if (currentQuarterBeat > prevBeat) {
+          const currentBeat = Math.floor(currentQuarterBeat) % 16;
+          updateBeatButtonClasses(currentBeat);
+          scheduleNextQuarterBeat();
+          prevBeat = currentQuarterBeat;
+        }
         lastUpdateTime = timestamp;
       }
 
