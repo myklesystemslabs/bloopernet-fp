@@ -46,6 +46,7 @@ const Pattern = ({
   const [volume, setVolume] = useState(initialVolume || 100);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const beatButtonsRef = useRef([]);
+  const prevBeatRef = useRef(-1);
 
   // used for decorating buttons
   const currentQuarterBeat = (calculateElapsedQuarterBeats(bpmDoc, ts) + patternLength) % patternLength;
@@ -201,14 +202,6 @@ const Pattern = ({
     }
   }, [playing, ts, soundBuffer, beats, instrument, isMuted, isSolo]);
 
-  useEffect(() => {
-    if (ts && playing) {
-      const quarterBeatInterval_ms = (15 / bpm) * 1000; // Duration of one quarter beat in milliseconds
-      const intervalId = setInterval(scheduleNextQuarterBeat, quarterBeatInterval_ms);
-      return () => clearInterval(intervalId);
-    }
-  }, [ts, playing, scheduleNextQuarterBeat, bpm, isMuted, isSolo]);
-
   const playSound = () => {
     if (soundBuffer) {
       const source = getAudioContext().createBufferSource();
@@ -224,49 +217,42 @@ const Pattern = ({
     beatButtonsRef.current.forEach((button, index) => {
       if (!button) return;
 
-      const isActive = beats[`beat-${instrumentId}-${index}`];
-      const isCurrent = index === currentBeat;
+      const beatId = `beat-${instrumentId}-${index}`;
+      const isActive = beats[beatId] === true;
+      const isCurrent = ts && bpmDoc && playing && index === currentBeat;
       const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
-      const isStarting = index === 0 && currentBeat === 15; // Assuming 16 beats per pattern
+      const isStarting = playing && index === 0 && currentBeat === 15;
 
-      // Explicitly add or remove classes
-      if (isActive) {
-        button.classList.add('active');
-      } else {
-        button.classList.remove('active');
-      }
+      // Update 'active' class
+      button.classList[isActive ? 'add' : 'remove']('active');
 
-      if (isCurrent) {
-        button.classList.add('current');
-      } else {
-        button.classList.remove('current');
-      }
+      // Update 'current' class
+      button.classList[isCurrent ? 'add' : 'remove']('current');
 
-      if (isSilent) {
-        button.classList.add('silent');
-      } else {
-        button.classList.remove('silent');
-      }
+      // Update 'silent' class
+      button.classList[isSilent ? 'add' : 'remove']('silent');
 
-      if (isStarting) {
-        button.classList.add('starting');
-      } else {
-        button.classList.remove('starting');
-      }
+      // Update 'starting' class
+      button.classList[isStarting ? 'add' : 'remove']('starting');
     });
   }, [beats, instrumentId, isMuted, isSolo, anyTrackSoloed, masterMuted]);
 
+  let prevCurrentBeat = -1;
   useEffect(() => {
     if (bpmDoc?.playing) {
+      const updateInterval = 1000 / (4 * (bpmDoc.bpm / 60)); // Update 4x per quarter beat
       const intervalId = setInterval(() => {
         const currentBeat = Math.floor(calculateElapsedQuarterBeats(bpmDoc, ts)) % 16;
-        updateBeatButtonClasses(currentBeat);
-        scheduleNextQuarterBeat();
-      }, 1000 / (4 * (bpmDoc.bpm / 60))); // Update 4x per quarter beat
+        if (currentBeat !== prevCurrentBeat) {
+          updateBeatButtonClasses(currentBeat);
+          scheduleNextQuarterBeat();
+          prevCurrentBeat = currentBeat;
+        }
+      }, updateInterval);
 
       return () => clearInterval(intervalId);
     }
-  }, [bpmDoc, updateBeatButtonClasses, scheduleNextQuarterBeat]);
+  }, [bpmDoc, updateBeatButtonClasses, scheduleNextQuarterBeat, ts]);
 
   const renderBeatButtons = () => {
     const groups = [];
@@ -275,13 +261,14 @@ const Pattern = ({
       for (let j = 0; j < 4; j++) {
         const index = i * 4 + j;
         const isActive = beats[`beat-${instrumentId}-${index}`] || false;
-        const isCurrent = playing && index === currentQuarterBeat;
+        const isCurrent = ts && bpmDoc && playing && index === currentQuarterBeat;
         const isStarting = calculateElapsedQuarterBeats(bpmDoc, ts) < 0 && playing;
         const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
         
         groupButtons.push(
           <div
             key={`${instrumentId}-${index}`}
+            ref={el => beatButtonsRef.current[index] = el}
             className={`beat-button ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isSilent ? 'silent' : ''} ${isStarting ? 'starting' : ''}`}
             onClick={() => updateBeat(instrumentId, index, !isActive)}
             data-id={`beat-${instrumentId}-${index}`}
@@ -394,14 +381,7 @@ const Pattern = ({
         </div>
       ) : (
         <div className="beat-buttons">
-          {Array(16).fill().map((_, index) => (
-            <div
-              key={index}
-              ref={el => beatButtonsRef.current[index] = el}
-              className={`beat-button ${beats[`beat-${instrumentId}-${index}`] ? 'active' : ''}`}
-              onClick={() => updateBeat(instrumentId, index, !beats[`beat-${instrumentId}-${index}`])}
-            />
-          ))}
+          {renderBeatButtons()}
         </div>
       )}
       {showDeleteConfirm && (
