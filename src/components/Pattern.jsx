@@ -33,7 +33,7 @@ const Pattern = ({
   const { database, useLiveQuery } = useFireproof(dbName);
   const [audioBuffer, setAudioBuffer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [soundBuffer, setSoundBuffer] = useState(null);
+  const [loadError, setLoadError] = useState(null);
   const [wasPlaying, setWasPlaying] = useState(false);
   const gainNodeRef = useRef(null);
   const sourceNodeRef = useRef(null);
@@ -69,29 +69,45 @@ const Pattern = ({
     return beatMap;
   }, [beatResult]);
 
+  // Use useMemo to memoize the audio data
+  const audioData = useMemo(() => {
+    if (referenceType === 'url') {
+      return audioFile;
+    } else if (referenceType === 'database') {
+      const fileName = Object.keys(_files)[0];
+      return _files[fileName].file().then(file => URL.createObjectURL(file));
+    }
+    return null;
+  }, [audioFile, referenceType]);
+
+  // Use useEffect to load the sound buffer
   useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    setLoadError(null);
+
     const loadAudio = async () => {
-      setIsLoading(true);
       try {
-        let audioData;
-        if (referenceType === 'url') {
-          audioData = audioFile;
-        } else if (referenceType === 'database') {
-          const fileName = Object.keys(_files)[0];
-          const file = await _files[fileName].file();
-          audioData = URL.createObjectURL(file);
-        }
-        const buffer = await loadSound(audioData);
-        setSoundBuffer(buffer);
+        const data = await audioData;
+        if (!isMounted) return;
+        const buffer = await loadSound(data);
+        if (!isMounted) return;
+        setAudioBuffer(buffer);
+        setIsLoading(false);
       } catch (error) {
+        if (!isMounted) return;
         console.error('Error loading audio:', error);
-      } finally {
+        setLoadError(error);
         setIsLoading(false);
       }
     };
 
     loadAudio();
-  }, [referenceType, audioFile, _files]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [audioData]);
 
   useEffect(() => {
     if (!gainNodeRef.current) {
@@ -116,7 +132,7 @@ const Pattern = ({
   };
 
   const scheduleBeats = useCallback((scheduleStart_s, quarterBeatsToSchedule = 1, startBeatNumber = 0) => {
-    if (!soundBuffer || !playing) return [];
+    if (!audioBuffer || !playing) return [];
 
     const ctx = getAudioContext();
     const events = [];
@@ -125,7 +141,7 @@ const Pattern = ({
     for (let i = 0; i < quarterBeatsToSchedule; i++) {
       if (beats[`beat-${instrumentId}-${nextBeatNumber}`]) {
         const source = ctx.createBufferSource();
-        source.buffer = soundBuffer;
+        source.buffer = audioBuffer;
         source.connect(gainNodeRef.current);
 
         const beatTime_s = scheduleStart_s + (i * 15 / bpm);
@@ -136,10 +152,10 @@ const Pattern = ({
     }
 
     return events;
-  }, [instrument, soundBuffer, beats, bpm, playing]);
+  }, [audioBuffer, beats, bpm, playing, instrumentId]);
 
   const scheduleNextQuarterBeat = useCallback(() => {
-    if (!soundBuffer || !playing || !ts || timesyncStartTime_ms.current === null) return;
+    if (!audioBuffer || !playing || !ts || timesyncStartTime_ms.current === null) return;
 
     const currentTimesyncTime_ms = ts.now();
     const elapsedTimesyncTime_ms = currentTimesyncTime_ms - timesyncStartTime_ms.current;
@@ -174,7 +190,7 @@ const Pattern = ({
       console.warn("too late to schedule by ", (audioTimeToSchedule_s - currentAudioTime_s), " seconds");
     }
 
-  }, [instrument, soundBuffer, beats, bpm, playing, ts, isMuted, isSolo]);
+  }, [instrument, audioBuffer, beats, bpm, playing, ts, isMuted, isSolo]);
 
   useEffect(() => {
     if (ts && playing && !wasPlaying) {
@@ -200,12 +216,12 @@ const Pattern = ({
       scheduledEventsRef.current = [];
       setWasPlaying(false);
     }
-  }, [playing, ts, soundBuffer, beats, instrument, isMuted, isSolo]);
+  }, [playing, ts, audioBuffer, beats, instrument, isMuted, isSolo]);
 
   const playSound = () => {
-    if (soundBuffer) {
+    if (audioBuffer) {
       const source = getAudioContext().createBufferSource();
-      source.buffer = soundBuffer;
+      source.buffer = audioBuffer;
       source.connect(gainNodeRef.current);
       source.start();
     } else {
@@ -406,6 +422,7 @@ const Pattern = ({
         </div>
       )}
       {isLoading && <div>Loading audio...</div>}
+      {loadError && <div>Error loading audio: {loadError.message}</div>}
     </div>
   );
 };
