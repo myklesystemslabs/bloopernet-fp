@@ -46,7 +46,7 @@ const Pattern = ({
   const [volume, setVolume] = useState(initialVolume || 100);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const beatButtonsRef = useRef([]);
-  const prevBeatRef = useRef(-1);
+  const animationFrameRef = useRef(null);
 
   // used for decorating buttons
   const currentQuarterBeat = (calculateElapsedQuarterBeats(bpmDoc, ts) + patternLength) % patternLength;
@@ -219,40 +219,47 @@ const Pattern = ({
 
       const beatId = `beat-${instrumentId}-${index}`;
       const isActive = beats[beatId] === true;
-      const isCurrent = ts && bpmDoc && playing && index === currentBeat;
+      const isCurrent = index === currentBeat;
       const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
-      const isStarting = playing && index === 0 && currentBeat === 15;
 
-      // Update 'active' class
-      button.classList[isActive ? 'add' : 'remove']('active');
-
-      // Update 'current' class
-      button.classList[isCurrent ? 'add' : 'remove']('current');
-
-      // Update 'silent' class
-      button.classList[isSilent ? 'add' : 'remove']('silent');
-
-      // Update 'starting' class
-      button.classList[isStarting ? 'add' : 'remove']('starting');
+      button.className = `beat-button${isActive ? ' active' : ''}${isCurrent ? ' current' : ''}${isSilent ? ' silent' : ''}`;
     });
   }, [beats, instrumentId, isMuted, isSolo, anyTrackSoloed, masterMuted]);
 
-  let prevCurrentBeat = -1;
   useEffect(() => {
-    if (bpmDoc?.playing) {
-      const updateInterval = 1000 / (4 * (bpmDoc.bpm / 60)); // Update 4x per quarter beat
-      const intervalId = setInterval(() => {
-        const currentBeat = Math.floor(calculateElapsedQuarterBeats(bpmDoc, ts)) % 16;
-        if (currentBeat !== prevCurrentBeat) {
-          updateBeatButtonClasses(currentBeat);
-          scheduleNextQuarterBeat();
-          prevCurrentBeat = currentBeat;
-        }
-      }, updateInterval);
+    let lastUpdateTime = 0;
 
-      return () => clearInterval(intervalId);
+    const updateAnimation = (timestamp) => {
+      if (!playing) return;
+
+      // Update every 16ms (roughly 60fps)
+      if (timestamp - lastUpdateTime > 16) {
+        const currentQuarterBeat = calculateElapsedQuarterBeats(bpmDoc, ts);
+        const currentBeat = Math.floor(currentQuarterBeat) % 16;
+        updateBeatButtonClasses(currentBeat);
+        scheduleNextQuarterBeat();
+        lastUpdateTime = timestamp;
+      }
+
+      animationFrameRef.current = requestAnimationFrame(updateAnimation);
+    };
+
+    if (playing) {
+      animationFrameRef.current = requestAnimationFrame(updateAnimation);
+    } else {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      // Reset all beat buttons to their non-current state
+      updateBeatButtonClasses(-1);
     }
-  }, [bpmDoc, updateBeatButtonClasses, scheduleNextQuarterBeat, ts]);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [playing, bpmDoc, ts, updateBeatButtonClasses, scheduleNextQuarterBeat]);
 
   const renderBeatButtons = () => {
     const groups = [];
@@ -261,15 +268,12 @@ const Pattern = ({
       for (let j = 0; j < 4; j++) {
         const index = i * 4 + j;
         const isActive = beats[`beat-${instrumentId}-${index}`] || false;
-        const isCurrent = ts && bpmDoc && playing && index === currentQuarterBeat;
-        const isStarting = calculateElapsedQuarterBeats(bpmDoc, ts) < 0 && playing;
-        const isSilent = isMuted || (anyTrackSoloed && !isSolo) || masterMuted;
         
         groupButtons.push(
           <div
             key={`${instrumentId}-${index}`}
             ref={el => beatButtonsRef.current[index] = el}
-            className={`beat-button ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isSilent ? 'silent' : ''} ${isStarting ? 'starting' : ''}`}
+            className={`beat-button${isActive ? ' active' : ''}`}
             onClick={() => updateBeat(instrumentId, index, !isActive)}
             data-id={`beat-${instrumentId}-${index}`}
           >
