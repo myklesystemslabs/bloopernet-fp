@@ -1,8 +1,14 @@
 # Loopernet demo
 
-Work very much in progress. Known issues:
+Now running on Fireproof v0.19.106 
+
+Work in progress. Known issues:
 
 * Latency compensation is still crude.
-* After record, the preview doesn't make sound.
 * Time stutters when BPM is changed. WIP.
-* Sometimes it hangs, or slows down, or refuses to connect to the network. Reloading the page often helps.
+
+On the other hand:
+
+* Major performance improvements
+* Style fixes
+
