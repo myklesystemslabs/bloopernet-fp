@@ -12,31 +12,6 @@ import './App.css';
 import InviteButton from './components/InviteButton';
 import { useWakeLock } from 'react-screen-wake-lock';
 
-
-// const partyCxs = new Map(); // q: why is this global?
-// function partykitS3({ name, blockstore }, partyHost, refresh) {
-//   if (!name) throw new Error('database name is required')
-//   if (!refresh && partyCxs.has(name)) {
-//     return partyCxs.get(name)
-//   }
-//   const s3conf = { // example values, replace with your own by deploying https://github.com/fireproof-storage/valid-cid-s3-bucket
-//     upload: import.meta.env.VITE_S3PARTYUP,
-//     download: import.meta.env.VITE_S3PARTYDOWN
-//   }
-//   const s3conn = new ConnectS3(s3conf.upload, s3conf.download, '')
-//   s3conn.connectStorage(blockstore)
-//
-//   if (!partyHost) {
-//     console.warn('partyHost not provided, using localhost:1999')
-//     partyHost = 'http://localhost:1999'
-//   }
-//   const connection = new ConnectPartyKit({ name, host: partyHost })
-//   connection.connectMeta(blockstore)
-//   partyCxs.set(name, connection)
-//   return connection
-// }
-//
-
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
   const { jamId } = useParams();
