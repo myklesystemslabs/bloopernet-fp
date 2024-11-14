@@ -33,7 +33,7 @@ const Pattern = ({
   initialVolume, // Add this prop
   onTrackChange, // Add this prop
 }) => {
-  const { database } = useFireproof(dbName);
+  const { database } = useFireproof(dbName, {public: true});
   const [audioBuffer, setAudioBuffer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [soundBuffer, setSoundBuffer] = useState(null);

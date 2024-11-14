@@ -12,7 +12,7 @@ const DEFAULT_INSTRUMENTS = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
 const PatternSet = ({ dbName, beats, showNewTrackForm, onCancelNewTrack }) => {
   const ts = useTimesync();
   const [elapsedQuarterBeats, setElapsedQuarterBeats] = useState(0);
-  const { database, useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName, {public: true});
   const [trackSettings, setTrackSettings] = useState({});
   const [masterMuted, setMasterMuted] = useState(isMasterMuted());
 

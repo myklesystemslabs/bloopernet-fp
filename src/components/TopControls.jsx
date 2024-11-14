@@ -10,7 +10,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(isMasterMuted()); // Start muted
   const timeoutRef = useRef(null);
-  const { database, useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName, {public: true});
   // Fetch the current BPM document from the database
   const bpmResult = useLiveQuery('type', { key: 'bpm' });
   const bpmDoc = bpmResult.rows[0]?.doc;
