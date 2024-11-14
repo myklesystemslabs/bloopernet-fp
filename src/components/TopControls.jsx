@@ -11,7 +11,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
   const [tempBpm, setTempBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
   const timeoutRef = useRef(null);
-  const { database, useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName, {public: true});
   const [latency, setLatency] = useState(0);
   const [deviceId, setDeviceId] = useState(null);
   const latencyTimeoutRef = useRef(null);
@@ -169,18 +169,22 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     updateBPMDoc(update);
   }, [playing, bpmDoc, tempBpm, ts]);
 
-  // // autoplay if paused at startup:
-  // useEffect(() => {
-  //   if (!ts){console.warn("no timesync"); return;}
-  //   if (!ts) return;
-  //   const timer = setTimeout(() => {
-  //     if (!playing) {
-  //       togglePlay();
-  //     }
-  //   }, Math.floor(Math.random() * 4000) + 1000);
+  const beats = useLiveQuery('type', { key: 'beat' });
 
-  //   return () => clearTimeout(timer);
-  // }, [ts]);
+  console.log("beats", beats);
+
+  // autoplay if paused at startup:
+  useEffect(() => {
+    if (!ts){console.warn("no timesync"); return;}
+    if (!ts) return;
+    const timer = setTimeout(() => {
+      if (!playing && beats.rows.length > 0) {
+        togglePlay();
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [ts, beats]);
 
 
   const toggleMute = async () => {

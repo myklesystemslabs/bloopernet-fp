@@ -7,10 +7,12 @@ import { useFireproof } from 'use-fireproof';
 import { connect } from '@fireproof/cloud';
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
+import JamControls from './components/JamControls';
 import { TimesyncProvider } from './TimesyncContext';
 import './App.css';
 import InviteButton from './components/InviteButton';
 import { useWakeLock } from 'react-screen-wake-lock';
+import { QRCodeSVG } from 'qrcode.react';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -48,11 +50,13 @@ function App() {
   //////////////////////////////////////////////////////////////////////////////
   // Construct the database name based on the jamId
   const firstPathSegment = document.location.pathname.split('/')[1];
-  const baseDbName = (import.meta.env.VITE_DBNAME || 'bloop-machine') + (firstPathSegment ? '-' + firstPathSegment : '');
+  const baseDbName = (import.meta.env.VITE_DBNAME || 'bloop-pub') + (firstPathSegment ? '-' + firstPathSegment : '');
   const dbName = isValidJamId ? `${baseDbName}-${sanitizedJamId}` : baseDbName;
 
+  console.log("dbName", dbName);
+
   // connect to the database
-  const { database, useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName, {public: true});
   
   useEffect(() => {
     const connectToDatabase = async () => {
@@ -249,6 +253,7 @@ function App() {
         />
         <div className="app-content" style={{ height: 'var(--app-height)' }}>
           <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
+          <JamControls />
           <TopControls
             dbName={dbName}
             isExpert={isExpert}
@@ -299,6 +304,7 @@ export default RoutedApp;
 
 const AppInfo = ({ connectionUrl }) => (
   <footer>
+    <QRCodeSVG value={document.location.href} />
     <p>
       <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
     </p>

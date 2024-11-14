@@ -30,7 +30,7 @@ const Pattern = ({
   onTrackChange,
   headStart_ms,
 }) => {
-  const { database, useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName, {public: true});
   const [audioBuffer, setAudioBuffer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);

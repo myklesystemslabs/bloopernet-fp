@@ -18,7 +18,7 @@ const PatternSet = ({
   masterMuted,
 }) => {
   const ts = useTimesync();
-  const { database, useLiveQuery } = useFireproof(dbName);
+  const { database, useLiveQuery } = useFireproof(dbName, {public: true});
   const [trackSettings, setTrackSettings] = useState({});
 
   // Fetch the BPM document from the database
