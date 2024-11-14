@@ -121,18 +121,22 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     updateBPMDoc(update);
   }, [playing, bpmDoc, tempBpm, ts]);
 
+  const beats = useLiveQuery('type', { key: 'beat' });
+
+  console.log("beats", beats);
+
   // autoplay if paused at startup:
   useEffect(() => {
     if (!ts){console.warn("no timesync"); return;}
     if (!ts) return;
     const timer = setTimeout(() => {
-      if (!playing) {
+      if (!playing && beats.rows.length > 0) {
         togglePlay();
       }
-    }, Math.floor(Math.random() * 1000) + 1000);
+    }, 5000);
 
     return () => clearTimeout(timer);
-  }, [ts]);
+  }, [ts, beats]);
 
 
   const toggleMute = async () => {
