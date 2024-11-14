@@ -133,7 +133,7 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
       if (!playing && beats.rows.length > 0) {
         togglePlay();
       }
-    }, 5000);
+    }, 50);
 
     return () => clearTimeout(timer);
   }, [ts, beats]);
