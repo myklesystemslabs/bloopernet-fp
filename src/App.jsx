@@ -14,6 +14,7 @@ import { initLatencyCompensation } from './audioUtils';
 import './App.css';
 import InviteButton from './components/InviteButton';
 import { v4 as uuidv4 } from 'uuid';
+import { QRCodeSVG } from 'qrcode.react';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -225,10 +226,10 @@ export default RoutedApp;
 
 const AppInfo = ({ connectionUrl }) => (
   <footer>
+    <QRCodeSVG value={document.location.href} />
     <p>
       <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a target="_blank" href={connectionUrl || "https://fireproof.storage"}>Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
-    </p>
-    <img src="/qr.png" width="200" style={{ marginTop: '10px' }} />
+    </p>    
   </footer>
 );
 
