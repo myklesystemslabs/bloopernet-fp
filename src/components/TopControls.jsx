@@ -121,18 +121,18 @@ const TopControls = ({ dbName, isExpert, toggleTheme, theme, toggleVisuals, visu
     updateBPMDoc(update);
   }, [playing, bpmDoc, tempBpm, ts]);
 
-  // // autoplay if paused at startup:
-  // useEffect(() => {
-  //   if (!ts){console.warn("no timesync"); return;}
-  //   if (!ts) return;
-  //   const timer = setTimeout(() => {
-  //     if (!playing) {
-  //       togglePlay();
-  //     }
-  //   }, Math.floor(Math.random() * 4000) + 1000);
+  // autoplay if paused at startup:
+  useEffect(() => {
+    if (!ts){console.warn("no timesync"); return;}
+    if (!ts) return;
+    const timer = setTimeout(() => {
+      if (!playing) {
+        togglePlay();
+      }
+    }, Math.floor(Math.random() * 1000) + 1000);
 
-  //   return () => clearTimeout(timer);
-  // }, [ts]);
+    return () => clearTimeout(timer);
+  }, [ts]);
 
 
   const toggleMute = async () => {

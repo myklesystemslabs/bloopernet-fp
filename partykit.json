@@ -4,7 +4,6 @@
 	"main": "cursor-drum-test-party/src/server.ts",
   "parties": {
     "fireproof": "node_modules/@fireproof/partykit/src/server.ts",
-    "loopernet": "node_modules/@fireproof/partykit/src/server.ts",
 		"partytime": "party/partytime.ts"
   },
   "compatibilityDate": "2024-09-23"
