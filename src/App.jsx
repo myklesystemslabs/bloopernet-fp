@@ -7,6 +7,7 @@ import { useFireproof } from 'use-fireproof';
 import { connect } from '@fireproof/cloud';
 import PatternSet from './components/PatternSet';
 import TopControls from './components/TopControls';
+import JamControls from './components/JamControls';
 //import LatencySlider from './components/LatencySlider';
 import { TimesyncProvider } from './TimesyncContext';
 import { initLatencyCompensation } from './audioUtils';
@@ -179,6 +180,7 @@ function App() {
         />
         <div className="app-content" style={{ height: 'var(--app-height)' }}>
           <h1 className="app-title" {...longPressHandlers}>Bloopernet FP-808</h1>
+          <JamControls />
           <TopControls
             dbName={dbName}
             isExpert={isExpert}
