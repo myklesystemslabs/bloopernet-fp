@@ -12,7 +12,6 @@ import { TimesyncProvider } from './TimesyncContext';
 import './App.css';
 import InviteButton from './components/InviteButton';
 import { useWakeLock } from 'react-screen-wake-lock';
-import { QRCodeSVG } from 'qrcode.react';
 
 function App() {
   const instruments = ['Kick', 'Snare', 'Hi-hat', 'Tom', 'Clap'];
@@ -304,7 +303,6 @@ export default RoutedApp;
 
 const AppInfo = ({ connectionUrl }) => (
   <footer>
-    <QRCodeSVG value={document.location.href} />
     <p>
       <a href="https://github.com/fireproof-storage/bloopernet">Fork us on GitHub</a>, try <a href="https://fireproof.storage">Fireproof</a>, and learn more about the <a href="https://bikeportland.org/2024/06/14/bloops-and-bleeps-ride-gives-cycling-new-sounds-387546">Bloopernet Project</a>.
     </p>
