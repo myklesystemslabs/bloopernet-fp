@@ -8,10 +8,10 @@ body, html {
   z-index: 0;
   padding: 0;
   margin: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
   width: 100vw;
-  height: 100vh;
-  height: var(--app-height);
+  /* height: 100vh; */
+  /* height: var(--app-height); */
 }
 
 
@@ -23,17 +23,17 @@ body, html {
   -webkit-overflow-scrolling: touch;
   /* Add any other specific styles for your content here */
   text-align: center;
-  padding: 20px;
+  /* padding: 20px; */
   max-width: 885px;  /* Adjust this value as needed */
   margin: 0 auto;    /* This centers the content horizontally */
   z-index: 2; /* This ensures the main app content is above the visualizer */
-  min-height: 100vh;
-  height: var(--app-height);
+  /* min-height: 100vh; */
+  /* height: var(--app-height); */
 }
 
 .app {
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
   position: relative;
 }
 
@@ -43,10 +43,10 @@ body, html {
   z-index: 0;
   padding: 0;
   margin: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
   width: 100vw;
-  height: 100vh;
-  height: var(--app-height);
+  /* height: 100vh; */
+  /* height: var(--app-height); */
 }
 
 .app-title {
@@ -61,7 +61,7 @@ body, html {
 .app-container {
   width: 100vw;
   max-width: 100%;
-  padding: 20px;
+  /* padding: 20px; */
   box-sizing: border-box;
 }
 
