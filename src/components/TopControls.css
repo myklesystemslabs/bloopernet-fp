@@ -134,36 +134,11 @@
   width: 150px;
 }
 
-.latency-value {
-  min-width: 60px;
-  text-align: center;
-}
-
-.measure-latency-button {
-  background-color: var(--button-bg);
-  color: var(--button-text);
-  border: 2px solid var(--button-border);
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.measure-latency-button:hover {
-  background-color: var(--button-hover);
-}
-
 /* Responsive styles for mobile */
 @media (max-width: 767px) {
   .latency-slider {
     flex: 1;
     margin: 0;
-  }
-
-  .measure-latency-button {
-    flex: 1;
-    margin-top: 5px;
   }
 }
 
@@ -179,13 +154,11 @@
   color: var(--button-text);
 }
 
-.bpm-value,
-.latency-value {
+.bpm-value {
   cursor: pointer;
 }
 
-.bpm-value:hover,
-.latency-value:hover {
+.bpm-value:hover {
   text-decoration: underline;
 }
 
@@ -211,10 +184,6 @@
 @media (max-width: 768px) {
   .latency-control {
     width: 100%;
-  }
-
-  .latency-value {
-    margin-top: 10px;
   }
 }
 

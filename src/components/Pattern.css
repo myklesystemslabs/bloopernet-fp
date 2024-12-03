@@ -54,7 +54,7 @@
   height: 60px;
 }
 
-.round-button,
+
 .pattern-controls .mute-button,
 .pattern-controls .solo-button,
 .pattern-controls .info-button {
@@ -273,11 +273,6 @@
 .volume-control input[type="range"] {
   flex-grow: 1;
   margin-right: 10px;
-}
-
-.volume-label {
-  min-width: 40px;
-  text-align: right;
 }
 
 .delete-confirm {
